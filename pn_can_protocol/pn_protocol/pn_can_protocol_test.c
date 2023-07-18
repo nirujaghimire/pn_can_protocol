@@ -137,8 +137,8 @@ static uint8_t tx_bytes2[16] = { 1, 5, 3, 7 };
 static uint8_t tx_bytes3[16] = { 2, 4, 6, 8 };
 
 static void runRx() {
-	StaticCanProtocol.addLink(&link1, canSend, txCallback1, rxCallback1, 0);
-	StaticCanProtocol.addLink(&link2, canSend, txCallback2, rxCallback2, 0);
+	StaticCanProtocol.addLink(&link1, canSend, txCallback1, rxCallback1, 1);
+	StaticCanProtocol.addLink(&link2, canSend, txCallback2, rxCallback2, 1);
 	canInit();
 
 	console("\n\nSOURCE INIT", "SUCCESS");
@@ -147,7 +147,7 @@ static void runRx() {
 	uint32_t tick = HAL_GetTick();
 	while (1) {
 		uint32_t tock = HAL_GetTick();
-		if ((tock - tick) >= 1000) {
+		if ((tock - tick) >= 10) {
 			StaticCanProtocol.addTxMessagePtr(&link1, 0xA1, tx_bytes1,
 					sizeof(tx_bytes1));
 			StaticCanProtocol.addTxMessagePtr(&link1, 0xB1, tx_bytes2,
