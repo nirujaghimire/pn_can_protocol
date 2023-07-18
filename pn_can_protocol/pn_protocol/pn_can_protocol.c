@@ -256,10 +256,18 @@ static uint8_t addTxMessage(SyncLayerCanLink *link, uint32_t id,
 			return 0;
 		}
 	} else {
-		if (StaticHashMap.insert(tx_map[link_index], id, sync_data) == NULL) {
-			console(CONSOLE_ERROR, __func__,
-					"Heap is full. Sync data can't be put in map\n");
-			return 0;
+		if(!StaticHashMap.isKeyExist(tx_map[link_index], id)){
+			if (StaticHashMap.insert(tx_map[link_index], id, sync_data) == NULL) {
+						console(CONSOLE_ERROR, __func__,
+						"Heap is full. Sync data can't be put in map\n");
+				return 0;
+			}
+		}else{
+			free(sync_data);
+			memory_leak_tx[link_index] -= sizeof(SyncLayerCanData);
+			console(CONSOLE_INFO, __func__,
+									"Pointer of message with id 0x%0x is successfully updated\n", id);
+			return;
 		}
 	}
 
@@ -291,7 +299,7 @@ static uint8_t addTxMessagePtr(SyncLayerCanLink *link, uint32_t id,
 				"Heap is full. Sync Data can't be created\n");
 		return 0;
 	}
-	memory_leak_rx[link_index] += sizeof(SyncLayerCanData);
+	memory_leak_tx[link_index] += sizeof(SyncLayerCanData);
 
 	sync_data->id = id;
 	sync_data->bytes = data;
@@ -302,6 +310,7 @@ static uint8_t addTxMessagePtr(SyncLayerCanLink *link, uint32_t id,
 	sync_data->data_retry = 0;
 	sync_data->dynamically_alocated = 0;
 
+	printf("Leaked : %d\n",(int)memory_leak_rx[link_index]);
 	if (is_in_que[link_index]) {
 		if (StaticQueue.doesExist(tx_que[link_index], sync_data)) {
 			console(CONSOLE_INFO, __func__, "Sync Data already in que\n");
@@ -314,10 +323,18 @@ static uint8_t addTxMessagePtr(SyncLayerCanLink *link, uint32_t id,
 			return 0;
 		}
 	} else {
-		if (StaticHashMap.insert(tx_map[link_index], id, sync_data) == NULL) {
-			console(CONSOLE_ERROR, __func__,
-					"Heap is full. Sync data can't be put in map\n");
-			return 0;
+		if(!StaticHashMap.isKeyExist(tx_map[link_index], id)){
+			if (StaticHashMap.insert(tx_map[link_index], id, sync_data) == NULL) {
+						console(CONSOLE_ERROR, __func__,
+						"Heap is full. Sync data can't be put in map\n");
+				return 0;
+			}
+		}else{
+			free(sync_data);
+			memory_leak_tx[link_index] -= sizeof(SyncLayerCanData);
+			console(CONSOLE_INFO, __func__,
+						"Pointer of message with id 0x%0x is successfully updated\n", id);
+			return;
 		}
 	}
 	console(CONSOLE_INFO, __func__,
@@ -359,10 +376,18 @@ static uint8_t addRxMessagePtr(SyncLayerCanLink *link, uint32_t id,
 	sync_data->data_retry = 0;
 	sync_data->dynamically_alocated = 0;
 
-	if (StaticHashMap.insert(rx_map[link_index], id, sync_data) == NULL) {
-		console(CONSOLE_ERROR, __func__,
-				"Heap is full. Sync data can't be put\n");
-		return 0;
+	if(!StaticHashMap.isKeyExist(rx_map[link_index], id)){
+		if (StaticHashMap.insert(rx_map[link_index], id, sync_data) == NULL) {
+			console(CONSOLE_ERROR, __func__,
+						"Heap is full. Sync data can't be put\n");
+			return 0;
+		}
+	}else{
+		free(sync_data);
+		memory_leak_rx[link_index] -= sizeof(SyncLayerCanData);
+		console(CONSOLE_INFO, __func__,
+								"Pointer of message with id 0x%0x is successfully updated\n", id);
+		return;
 	}
 	console(CONSOLE_INFO, __func__,
 			"Pointer of message with id 0x%0x is successfully added as container\n",
