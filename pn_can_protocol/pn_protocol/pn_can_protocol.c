@@ -198,6 +198,21 @@ static uint8_t pop(SyncLayerCanLink *link) {
 	return 1;
 }
 
+static int doesExist(Queue* queue,SyncLayerCanData *data){
+	int que_size = queue->size;
+	struct QueueData* queData = queue->front;
+	SyncLayerCanData* syncData;
+	for(int i=0;i<que_size;i++){
+		syncData = (SyncLayerCanData *)queData->value;
+		if(syncData->id==data->id)
+			return 1;
+		queData = queData->next;
+		if(queData==NULL)
+			break;
+	}
+	return 0;
+}
+
 /*
  * This will add the data to be transmitted in link
  * @param link		: Link where data is to be transmitted
@@ -246,13 +261,18 @@ static uint8_t addTxMessage(SyncLayerCanLink *link, uint32_t id,
 	sync_data->dynamically_alocated = 1;
 
 	if (is_in_que[link_index]) {
-		if (StaticQueue.doesExist(tx_que[link_index], sync_data)) {
-			console(CONSOLE_INFO, __func__, "Sync Data already in que\n");
-			return 1;
-		}
-		if (StaticQueue.enqueue(tx_que[link_index], sync_data) == NULL) {
-			console(CONSOLE_ERROR, __func__,
-					"Heap is full. Sync data can't be put in que\n");
+		if (!doesExist(tx_que[link_index], sync_data)) {
+			if (StaticQueue.enqueue(tx_que[link_index], sync_data) == NULL) {
+				console(CONSOLE_ERROR, __func__,
+								"Heap is full. Sync data can't be put in que\n");
+				return 0;
+			}
+		}else{
+			free(data_bytes);
+			free(sync_data);
+			memory_leak_tx[link_index] -= sizeof(SyncLayerCanData);
+			console(CONSOLE_INFO, __func__,
+					"Pointer of message with id 0x%0x is already exist updated\n", id);
 			return 0;
 		}
 	} else {
@@ -263,6 +283,7 @@ static uint8_t addTxMessage(SyncLayerCanLink *link, uint32_t id,
 				return 0;
 			}
 		}else{
+			free(data_bytes);
 			free(sync_data);
 			memory_leak_tx[link_index] -= sizeof(SyncLayerCanData);
 			console(CONSOLE_INFO, __func__,
@@ -275,6 +296,7 @@ static uint8_t addTxMessage(SyncLayerCanLink *link, uint32_t id,
 			"Message with id 0x%0x is successfully added\n", id);
 	return 1;
 }
+
 
 /*
  * This will add reference of the data to be transmitted in link
@@ -311,14 +333,17 @@ static uint8_t addTxMessagePtr(SyncLayerCanLink *link, uint32_t id,
 	sync_data->dynamically_alocated = 0;
 
 	if (is_in_que[link_index]) {
-		if (StaticQueue.doesExist(tx_que[link_index], sync_data)) {
-			console(CONSOLE_INFO, __func__, "Sync Data already in que\n");
-			return 1;
-		}
-
-		if (StaticQueue.enqueue(tx_que[link_index], sync_data) == NULL) {
-			console(CONSOLE_ERROR, __func__,
-					"Heap is full. Sync data can't be put in que\n");
+		if (!doesExist(tx_que[link_index], sync_data)) {
+			if (StaticQueue.enqueue(tx_que[link_index], sync_data) == NULL) {
+				console(CONSOLE_ERROR, __func__,
+								"Heap is full. Sync data can't be put in que\n");
+				return 0;
+			}
+		}else{
+			free(sync_data);
+			memory_leak_tx[link_index] -= sizeof(SyncLayerCanData);
+			console(CONSOLE_INFO, __func__,
+					"Pointer of message with id 0x%0x is already exist updated\n", id);
 			return 0;
 		}
 	} else {

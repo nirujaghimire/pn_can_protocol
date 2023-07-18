@@ -164,8 +164,8 @@ static void runRx() {
 }
 
 static void runTx() {
-	StaticCanProtocol.addLink(&link1, canSend, txCallback1, rxCallback1, 0);
-	StaticCanProtocol.addLink(&link2, canSend, txCallback2, rxCallback2, 0);
+	StaticCanProtocol.addLink(&link1, canSend, txCallback1, rxCallback1, 1);
+	StaticCanProtocol.addLink(&link2, canSend, txCallback2, rxCallback2, 1);
 	canInit();
 
 	console("\n\nSOURCE INIT", "SUCCESS");
@@ -174,7 +174,7 @@ static void runTx() {
 	uint32_t tick = HAL_GetTick();
 	while (1) {
 		uint32_t tock = HAL_GetTick();
-		if ((tock - tick) >= 5000) {
+		if ((tock - tick) >= 10) {
 			StaticCanProtocol.addTxMessagePtr(&link1, 0xA, tx_bytes1,
 					sizeof(tx_bytes1));
 			StaticCanProtocol.addTxMessagePtr(&link1, 0xB, tx_bytes2,
