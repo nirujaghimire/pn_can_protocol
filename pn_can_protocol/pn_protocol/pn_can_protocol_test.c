@@ -50,8 +50,8 @@ static void canRxInterrupt() {
 //	for (int i = 0; i < rx_header.DLC; ++i)
 //		printf("%d ", bytes[i]);
 //	printf("\n");
-//	StaticCanProtocol.recThread(&link1, rx_header.ExtId, bytes, rx_header.DLC);
-//	StaticCanProtocol.recThread(&link2, rx_header.ExtId, bytes, rx_header.DLC);
+	StaticCanProtocol.recThread(&link1, rx_header.ExtId, bytes, rx_header.DLC);
+	StaticCanProtocol.recThread(&link2, rx_header.ExtId, bytes, rx_header.DLC);
 
 }
 
@@ -143,6 +143,7 @@ static void runRx() {
 
 	console("\n\nSOURCE INIT", "SUCCESS");
 
+	HAL_Delay(1000);
 	uint32_t tick = HAL_GetTick();
 	while (1) {
 		uint32_t tock = HAL_GetTick();
@@ -156,6 +157,7 @@ static void runRx() {
 
 			tick = tock;
 		}
+
 
 		StaticCanProtocol.sendThread(&link1);
 		StaticCanProtocol.sendThread(&link2);
