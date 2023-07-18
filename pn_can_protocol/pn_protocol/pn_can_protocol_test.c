@@ -50,8 +50,8 @@ static void canRxInterrupt() {
 //	for (int i = 0; i < rx_header.DLC; ++i)
 //		printf("%d ", bytes[i]);
 //	printf("\n");
-	StaticCanProtocol.recThread(&link1, rx_header.ExtId, bytes, rx_header.DLC);
-	StaticCanProtocol.recThread(&link2, rx_header.ExtId, bytes, rx_header.DLC);
+//	StaticCanProtocol.recThread(&link1, rx_header.ExtId, bytes, rx_header.DLC);
+//	StaticCanProtocol.recThread(&link2, rx_header.ExtId, bytes, rx_header.DLC);
 
 }
 
@@ -142,18 +142,16 @@ static void runRx() {
 	canInit();
 
 	console("\n\nSOURCE INIT", "SUCCESS");
-	HAL_Delay(3000);
-
 
 	uint32_t tick = HAL_GetTick();
 	while (1) {
 		uint32_t tock = HAL_GetTick();
-		if ((tock - tick) >= 100) {
-			StaticCanProtocol.addTxMessagePtr(&link1, 0xA, tx_bytes1,
+		if ((tock - tick) >= 5000) {
+			StaticCanProtocol.addTxMessagePtr(&link1, 0xA1, tx_bytes1,
 					sizeof(tx_bytes1));
-			StaticCanProtocol.addTxMessagePtr(&link1, 0xB, tx_bytes2,
+			StaticCanProtocol.addTxMessagePtr(&link1, 0xB1, tx_bytes2,
 					sizeof(tx_bytes2));
-			StaticCanProtocol.addTxMessagePtr(&link2, 0xC, tx_bytes3,
+			StaticCanProtocol.addTxMessagePtr(&link1, 0xC1, tx_bytes3,
 					sizeof(tx_bytes3));
 
 			tick = tock;
@@ -165,26 +163,34 @@ static void runRx() {
 }
 
 static void runTx() {
-	StaticCanProtocol.addLink(&link1, canSend, txCallback1, rxCallback1, 1);
-	StaticCanProtocol.addLink(&link2, canSend, txCallback2, rxCallback2, 1);
+	StaticCanProtocol.addLink(&link1, canSend, txCallback1, rxCallback1, 0);
+	StaticCanProtocol.addLink(&link2, canSend, txCallback2, rxCallback2, 0);
 	canInit();
 
 	console("\n\nSOURCE INIT", "SUCCESS");
 
+	HAL_Delay(1000);
+
 	uint32_t tick = HAL_GetTick();
 	while (1) {
 		uint32_t tock = HAL_GetTick();
-		if ((tock - tick) >= 1000) {
-			StaticCanProtocol.addTxMessagePtr(&link1, 0xA1, tx_bytes1,
+		if ((tock - tick) >= 100) {
+			StaticCanProtocol.addTxMessagePtr(&link1, 0xA, tx_bytes1,
 					sizeof(tx_bytes1));
-			StaticCanProtocol.addTxMessagePtr(&link1, 0xB1, tx_bytes2,
+			StaticCanProtocol.addTxMessagePtr(&link1, 0xB, tx_bytes2,
 					sizeof(tx_bytes2));
-			StaticCanProtocol.addTxMessagePtr(&link2, 0xC1, tx_bytes3,
+			StaticCanProtocol.addTxMessagePtr(&link1, 0xC, tx_bytes3,
+					sizeof(tx_bytes3));
+			StaticCanProtocol.addTxMessagePtr(&link2, 0xD, tx_bytes3,
+					sizeof(tx_bytes3));
+			StaticCanProtocol.addTxMessagePtr(&link2, 0xE, tx_bytes3,
 					sizeof(tx_bytes3));
 			tick = tock;
+
+
 		}
-		StaticCanProtocol.sendThread(&link1);
-		StaticCanProtocol.sendThread(&link2);
+//		StaticCanProtocol.sendThread(&link1);
+//		StaticCanProtocol.sendThread(&link2);
 	}
 }
 
