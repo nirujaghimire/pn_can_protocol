@@ -138,6 +138,7 @@ static HashMap *insert(HashMap *map, int key, HashMapType value) {
 
                 //Free allocated memory for @newEntry
                 freeMemory(newEntry, sizeof(Entry));
+
                 return map;
             }
 
