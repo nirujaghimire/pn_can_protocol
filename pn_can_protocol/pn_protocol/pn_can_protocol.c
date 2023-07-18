@@ -267,7 +267,7 @@ static uint8_t addTxMessage(SyncLayerCanLink *link, uint32_t id,
 			memory_leak_tx[link_index] -= sizeof(SyncLayerCanData);
 			console(CONSOLE_INFO, __func__,
 									"Pointer of message with id 0x%0x is successfully updated\n", id);
-			return;
+			return 0;
 		}
 	}
 
@@ -310,7 +310,6 @@ static uint8_t addTxMessagePtr(SyncLayerCanLink *link, uint32_t id,
 	sync_data->data_retry = 0;
 	sync_data->dynamically_alocated = 0;
 
-	printf("Leaked : %d\n",(int)memory_leak_rx[link_index]);
 	if (is_in_que[link_index]) {
 		if (StaticQueue.doesExist(tx_que[link_index], sync_data)) {
 			console(CONSOLE_INFO, __func__, "Sync Data already in que\n");
@@ -334,7 +333,7 @@ static uint8_t addTxMessagePtr(SyncLayerCanLink *link, uint32_t id,
 			memory_leak_tx[link_index] -= sizeof(SyncLayerCanData);
 			console(CONSOLE_INFO, __func__,
 						"Pointer of message with id 0x%0x is successfully updated\n", id);
-			return;
+			return 0;
 		}
 	}
 	console(CONSOLE_INFO, __func__,
@@ -387,7 +386,7 @@ static uint8_t addRxMessagePtr(SyncLayerCanLink *link, uint32_t id,
 		memory_leak_rx[link_index] -= sizeof(SyncLayerCanData);
 		console(CONSOLE_INFO, __func__,
 								"Pointer of message with id 0x%0x is successfully updated\n", id);
-		return;
+		return 0;
 	}
 	console(CONSOLE_INFO, __func__,
 			"Pointer of message with id 0x%0x is successfully added as container\n",
