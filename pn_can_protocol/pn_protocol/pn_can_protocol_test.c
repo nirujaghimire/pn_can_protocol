@@ -132,9 +132,9 @@ static uint8_t rxCallback2(uint32_t id, uint8_t *bytes, uint16_t size,
 	return 1;
 }
 
-static uint8_t tx_bytes1[8] = { 1, 2, 3, 4, [7]=10 };
-static uint8_t tx_bytes2[8] = { 1, 5, 3, 7 };
-static uint8_t tx_bytes3[8] = { 2, 4, 6, 8 };
+static uint8_t tx_bytes1[16] = { 1, 2, 3, 4, [7]=10 };
+static uint8_t tx_bytes2[16] = { 1, 5, 3, 7 };
+static uint8_t tx_bytes3[16] = { 2, 4, 6, 8 };
 
 static void runRx() {
 	StaticCanProtocol.addLink(&link1, canSend, txCallback1, rxCallback1, 0);
@@ -189,10 +189,8 @@ static void runTx() {
 		}
 //		HAL_Delay(1);
 
-//		NVIC_DisableIRQ(USB_LP_CAN1_RX0_IRQn);
 		StaticCanProtocol.sendThread(&link1);
 		StaticCanProtocol.sendThread(&link2);
-//		NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn);
 	}
 }
 
