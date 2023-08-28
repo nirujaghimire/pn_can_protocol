@@ -78,6 +78,13 @@ struct CanProtocolControl {
 	 */
 	void (*recThread)(SyncLayerCanLink *link, uint32_t id,
 			uint8_t *bytes, uint16_t len);
+
+	/**
+	 * This return allocated memory for hash map till now
+	 * @return  : Allocated memories
+	 */
+	int (*getAllocatedMemories)();
+
 };
 
 
