@@ -82,6 +82,17 @@ void NMI_Handler(void) {
 void HardFault_Handler(void) {
 	/* USER CODE BEGIN HardFault_IRQn 0 */
 
+	uint32_t *pSP;
+	__asm volatile("MRS R0, MSP");
+	__asm volatile("MOV %0,R0":"=r"(pSP));
+
+	printf("Hard fault\n");
+	printf("SP = %p\n", pSP);
+	for(int i=0;i<400;i++){
+		if((uint32_t)(pSP+i)>=0x20004fff)
+			break;
+		printf("%p : 0x%lx\n",(pSP+i), *(pSP+i));
+	}
 	/* USER CODE END HardFault_IRQn 0 */
 	while (1) {
 		/* USER CODE BEGIN W1_HardFault_IRQn 0 */
@@ -191,6 +202,7 @@ void USB_LP_CAN1_RX0_IRQHandler(void) {
 	/* USER CODE BEGIN USB_LP_CAN1_RX0_IRQn 0 */
 #include "pn_can_protocol.h"
 	StaticCanProtocolTest.canRxInterrupt();
+//	StaticSyncLayerCanTest.canRxInterruptRx();
 	/* USER CODE END USB_LP_CAN1_RX0_IRQn 0 */
 	HAL_CAN_IRQHandler(&hcan);
 	/* USER CODE BEGIN USB_LP_CAN1_RX0_IRQn 1 */
