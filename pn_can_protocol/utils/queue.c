@@ -18,10 +18,12 @@ typedef struct QueueData QueueData;
  * @return              : Pointer to allocated memory
  *                      : NULL if there exist no memory for allocation
  */
-static void *allocateMemory(int sideInByte) {
-    void* ptr = malloc(sideInByte);
+static void *allocateMemory(int sizeInByte) {
+    if(sizeInByte<=0)
+        return NULL;
+    void* ptr = malloc(sizeInByte);
     if(ptr!=NULL)
-        allocatedMemory+=sideInByte;
+        allocatedMemory+=sizeInByte;
     return ptr;
 }
 
@@ -32,6 +34,8 @@ static void *allocateMemory(int sideInByte) {
  * @return              : 1 for success (OR) 0 for failed
  */
 static int freeMemory(void *pointer, int sizeInByte) {
+    if(pointer==NULL || sizeInByte<=0)
+        return 0;
     free(pointer);
     allocatedMemory-=sizeInByte;
     return 1;
