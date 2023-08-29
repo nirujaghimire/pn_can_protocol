@@ -46,6 +46,7 @@ static CAN_RxHeaderTypeDef rx_header;
 static uint8_t bytes[8];
 static void canRxInterrupt() {
 	HAL_CAN_GetRxMessage(&hcan, CAN_RX_FIFO0, &rx_header, bytes);
+
 //	printf("Interrupt-> 0x%02x : ", (unsigned int) rx_header.ExtId);
 //	for (int i = 0; i < rx_header.DLC; ++i)
 //		printf("%d ", bytes[i]);
@@ -69,6 +70,7 @@ static uint8_t canSend(uint32_t id, uint8_t *bytes, uint8_t len) {
 //	for (int i = 0; i < len; ++i)
 //		printf("%d ", bytes[i]);
 //	printf("\n");
+
 
 	return HAL_CAN_AddTxMessage(&hcan, &tx_header, bytes, &tx_mailbox) == HAL_OK;
 }
@@ -99,6 +101,7 @@ static uint8_t rxCallback1(uint32_t id, uint8_t *bytes, uint16_t size,
 	for (int i = 0; i < size; i++)
 		printf("%d ", bytes[i]);
 	printf("\n");
+	StaticCanProtocol.addRxMessagePtr(&link1,id,bytes,size);
 
 	return 1;
 }
@@ -128,6 +131,7 @@ static uint8_t rxCallback2(uint32_t id, uint8_t *bytes, uint16_t size,
 	for (int i = 0; i < size; i++)
 		printf("%d ", bytes[i]);
 	printf("\n");
+//	StaticCanProtocol.addRxMessagePtr(&link2,id,bytes,size);
 
 	return 1;
 }
@@ -136,9 +140,22 @@ static uint8_t tx_bytes1[16] = { 1, 2, 3, 4, [9]=10 };
 static uint8_t tx_bytes2[16] = { 1, 5, 3, 7 };
 static uint8_t tx_bytes3[16] = { 2, 4, 6, 8 };
 
+
+static uint8_t rx_bytes1[1024];
+static uint8_t rx_bytes2[1024];
+static uint8_t rx_bytes3[1024];
+static uint8_t rx_bytes4[1024];
+static uint8_t rx_bytes5[1024];
 static void runRx() {
 	StaticCanProtocol.addLink(&link1, canSend, txCallback1, rxCallback1, 1);
 	StaticCanProtocol.addLink(&link2, canSend, txCallback2, rxCallback2, 1);
+
+//	StaticCanProtocol.addRxMessagePtr(&link1,0xA,rx_bytes1,sizeof(rx_bytes1));
+//	StaticCanProtocol.addRxMessagePtr(&link1,0xB,rx_bytes2,sizeof(rx_bytes2));
+//	StaticCanProtocol.addRxMessagePtr(&link1,0xC,rx_bytes3,sizeof(rx_bytes3));
+//	StaticCanProtocol.addRxMessagePtr(&link2,0xD,rx_bytes4,sizeof(rx_bytes4));
+//	StaticCanProtocol.addRxMessagePtr(&link2,0xE,rx_bytes5,sizeof(rx_bytes5));
+
 	canInit();
 
 	console("\n\nSOURCE INIT", "SUCCESS");
@@ -147,19 +164,25 @@ static void runRx() {
 	uint32_t tick = HAL_GetTick();
 	while (1) {
 		uint32_t tock = HAL_GetTick();
-		if ((tock - tick) >= 10) {
-			StaticCanProtocol.addTxMessagePtr(&link1, 0xA1, tx_bytes1,
-					sizeof(tx_bytes1));
-			StaticCanProtocol.addTxMessagePtr(&link1, 0xB1, tx_bytes2,
-					sizeof(tx_bytes2));
-			StaticCanProtocol.addTxMessagePtr(&link1, 0xC1, tx_bytes3,
-					sizeof(tx_bytes3));
+//		if ((tock - tick) >= 10) {
+//			StaticCanProtocol.addTxMessagePtr(&link1, 0xA1, tx_bytes1,
+//					sizeof(tx_bytes1));
+//			StaticCanProtocol.addTxMessagePtr(&link1, 0xB1, tx_bytes2,
+//					sizeof(tx_bytes2));
+//			StaticCanProtocol.addTxMessagePtr(&link1, 0xC1, tx_bytes3,
+//					sizeof(tx_bytes3));
+//
+//			tick = tock;
+//		}
+//		HAL_Delay(1);
 
-			tick = tock;
-		}
+//		uint32_t prim = __get_PRIMASK();
+//		__disable_irq();
 
 		StaticCanProtocol.sendThread(&link1);
 		StaticCanProtocol.sendThread(&link2);
+//		if(!prim)
+//			__enable_irq();
 	}
 }
 
@@ -186,7 +209,6 @@ static void runTx() {
 			StaticCanProtocol.addTxMessagePtr(&link2, 0xE, tx_bytes3,
 					sizeof(tx_bytes3));
 			tick = tock;
-
 
 		}
 		StaticCanProtocol.sendThread(&link1);

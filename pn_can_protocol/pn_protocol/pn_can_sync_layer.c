@@ -12,10 +12,25 @@
 #include "test.h"
 
 
-#define SYNC_LAYER_CAN_TRANSMIT_TIMEOUT 10000
-#define SYNC_LAYER_CAN_RECEIVE_TIMEOUT 10000
+#define SYNC_LAYER_CAN_TRANSMIT_TIMEOUT 2000
+#define SYNC_LAYER_CAN_RECEIVE_TIMEOUT 2000
 
 #define SYNC_LAYER_CAN_TX_SEND_RETRY 3
+
+
+static uint32_t prim;
+static void enableIRQ(){
+	if(!prim)
+		__enable_irq();
+}
+
+static void disableIRQ(){
+	 prim = __get_PRIMASK();
+	 __disable_irq();
+}
+
+
+
 
 /******************CONSOLE*****************************/
 typedef enum {
@@ -23,7 +38,9 @@ typedef enum {
 } ConsoleStatus;
 static void console(ConsoleStatus status, const char *func_name,
 		const char *msg, ...) {
-	if (status == CONSOLE_INFO||status==CONSOLE_WARNING)
+	if (status == CONSOLE_INFO)
+		return;
+	if (status == CONSOLE_WARNING)
 		return;
 	//TODO make naked and show all registers
 	if (status == CONSOLE_ERROR) {
@@ -67,12 +84,15 @@ static uint8_t txSendThread(SyncLayerCanLink *link,
 		uint8_t (*canSend)(uint32_t id, uint8_t *bytes, uint8_t len),
 		void (*txCallback)(SyncLayerCanLink *link, SyncLayerCanData *data,
 				uint8_t status)) {
+
+	disableIRQ();//Disabling interrupt
 	uint8_t bytes[8] = { 0 };
 	SyncLayerCanTrack prev_track = data->track;
 
 	/* Check success */
 	if (data->track == SYNC_LAYER_CAN_TRANSMIT_SUCCESS) {
 		txCallback(link, data, 1);
+		enableIRQ();//Enabling interrupt
 		return 1;
 	} else if (data->track == SYNC_LAYER_CAN_TRANSMIT_FAILED) {
 		if (data->data_retry > SYNC_LAYER_CAN_TX_SEND_RETRY) {
@@ -80,6 +100,7 @@ static uint8_t txSendThread(SyncLayerCanLink *link,
 			console(CONSOLE_ERROR, __func__, "Sending failed exceed limit %d\n",
 					data->data_retry);
 			txCallback(link, data, 0);
+			enableIRQ();//Enabling interrupt
 			return 1;
 		} else {
 			/* Retry available */
@@ -182,7 +203,7 @@ static uint8_t txSendThread(SyncLayerCanLink *link,
 				data->id, SYNC_LAYER_CAN_TRANSMIT_TIMEOUT);
 		data->track = SYNC_LAYER_CAN_TRANSMIT_FAILED;
 	}
-
+	enableIRQ();//Enabling interrupt
 	return 0;
 }
 
@@ -200,7 +221,7 @@ static void txReceiveThread(SyncLayerCanLink *link,
 	uint32_t data_id;
 
 	if (data->track == SYNC_LAYER_CAN_START_ACK
-			&& can_id == link->start_ack_ID) {
+			|| can_id == link->start_ack_ID) {
 		/* START ACK */
 		data_id = *(uint32_t*) can_bytes;
 		if (data_id != data->id) {
@@ -312,14 +333,16 @@ static uint8_t rxSendThread(SyncLayerCanLink *link,
 		uint8_t (*canSend)(uint32_t id, uint8_t *bytes, uint8_t len),
 		void (*rxCallback)(SyncLayerCanLink *link, SyncLayerCanData *data,
 				uint8_t status)) {
+	disableIRQ();//Disabling interrupt
 	uint8_t bytes[8] = { 0 };
 	SyncLayerCanTrack prev_track = data->track;
-
 	if (data->track == SYNC_LAYER_CAN_RECEIVE_SUCCESS) {
 		rxCallback(link, data, 1);
+		enableIRQ();//Enabling interrupt
 		return 1;
 	} else if (data->track == SYNC_LAYER_CAN_RECEIVE_FAILED) {
 		rxCallback(link, data, 0);
+		enableIRQ();//Enabling interrupt
 		return 1;
 	}
 
@@ -414,6 +437,7 @@ static uint8_t rxSendThread(SyncLayerCanLink *link,
 		data->track = SYNC_LAYER_CAN_RECEIVE_FAILED;
 	}
 
+	enableIRQ();//Enabling interrupt
 	return 0;
 }
 
@@ -431,7 +455,7 @@ static void rxReceiveThread(SyncLayerCanLink *link,
 	uint32_t data_id;
 	uint8_t is_failed = 0;
 	if (data->track == SYNC_LAYER_CAN_START_REQUEST
-			&& can_id == link->start_req_ID) {
+			|| can_id == link->start_req_ID) {
 		/* START REQ */
 		data_id = *(uint32_t*) can_bytes;
 		uint16_t size = *(uint16_t*) ((uint32_t*) can_bytes + 1);
