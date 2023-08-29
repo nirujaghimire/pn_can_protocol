@@ -132,7 +132,7 @@ static uint8_t rxCallback2(uint32_t id, uint8_t *bytes, uint16_t size,
 	return 1;
 }
 
-static uint8_t tx_bytes1[16] = { 1, 2, 3, 4, [9]=10 };
+static uint8_t tx_bytes1[16] = { 1, 2, 3, 4, [7]=10 };
 static uint8_t tx_bytes2[16] = { 1, 5, 3, 7 };
 static uint8_t tx_bytes3[16] = { 2, 4, 6, 8 };
 
@@ -186,13 +186,14 @@ static void runTx() {
 			StaticCanProtocol.addTxMessagePtr(&link2, 0xE, tx_bytes3,
 					sizeof(tx_bytes3));
 			tick = tock;
-
-
 		}
+//		HAL_Delay(1);
+
 		StaticCanProtocol.sendThread(&link1);
 		StaticCanProtocol.sendThread(&link2);
 	}
 }
+
 
 struct CanProtocolTest StaticCanProtocolTest = { .canRxInterrupt =
 		canRxInterrupt, .runRx = runRx, .runTx = runTx };

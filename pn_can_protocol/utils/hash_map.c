@@ -4,6 +4,7 @@
 
 #include "hash_map.h"
 #include <stdint.h>
+#include <stdarg.h>
 #include "stdio.h"
 #include "stdlib.h"
 
@@ -13,13 +14,12 @@
 static int allocatedMemory = 0;
 
 typedef struct HashMapEntry Entry;
-
 /**
  * This converts key into hasKey
  * @param key   : Actual Key
  * @return      : Hash Key
  */
-int hashFunc(int key) {
+static int hashFunc(int key) {
     return key % MAP_SIZE;
 }
 
@@ -30,6 +30,8 @@ int hashFunc(int key) {
  *                      : NULL if there exist no memory for allocation
  */
 static void *allocateMemory(int sizeInByte) {
+    if(sizeInByte<=0)
+        return NULL;
     void* ptr = malloc(sizeInByte);
     if(ptr!=NULL)
         allocatedMemory+=sizeInByte;
@@ -43,6 +45,8 @@ static void *allocateMemory(int sizeInByte) {
  * @return              : 1 for success (OR) 0 for failed
  */
 static int freeMemory(void *pointer, int sizeInByte) {
+    if(pointer==NULL || sizeInByte<=0)
+        return 0;
     free(pointer);
     allocatedMemory-=sizeInByte;
     return 1;
@@ -138,7 +142,6 @@ static HashMap *insert(HashMap *map, int key, HashMapType value) {
 
                 //Free allocated memory for @newEntry
                 freeMemory(newEntry, sizeof(Entry));
-
                 return map;
             }
 
@@ -208,10 +211,6 @@ static HashMapType get(HashMap *map, int key) {
  */
 static HashMap *delete(HashMap *map, int key) {
     //If map is NULL return NULL
-    if (map == NULL)
-        return NULL;
-
-    //If map is NULL then return NULL
     if (map == NULL)
         return NULL;
 
@@ -296,10 +295,6 @@ static HashMap *getKeys(HashMap *map, int keys[]) {
  */
 static int isKeyExist(HashMap *map, int key) {
     //If map is NULL return false
-    if (map == NULL)
-        return 0;
-
-    //If map is NULL then return NULL
     if (map == NULL)
         return 0;
 
