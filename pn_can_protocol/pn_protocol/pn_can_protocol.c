@@ -5,7 +5,6 @@
  *      Author: NIRUJA
  */
 
-
 #include "pn_can_protocol.h"
 #include "stdarg.h"
 #include "hash_map.h"
@@ -38,13 +37,30 @@ static int memory_leak_rx[PN_CAN_PROTOCOL_LINK_MAX_SIZE];
 
 static int allocatedMemory = 0;
 
+static uint32_t prim;
+static void enableIRQ() {
+	NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn);
+//	if(!prim)
+//		__enable_irq();
+}
+
+static void disableIRQ() {
+	NVIC_DisableIRQ(USB_LP_CAN1_RX0_IRQn);
+
+//	prim = __get_PRIMASK();
+//	 __disable_irq();
+
+}
+
 /*****************************CONSOLE****************************/
 typedef enum {
 	CONSOLE_ERROR, CONSOLE_INFO, CONSOLE_WARNING
 } ConsoleStatus;
 static void console(ConsoleStatus status, const char *func_name,
 		const char *msg, ...) {
-	if (status == CONSOLE_INFO||status==CONSOLE_WARNING)
+	if (status == CONSOLE_INFO)
+		return;
+	if (status == CONSOLE_WARNING)
 		return;
 	//TODO make naked and show all registers
 	if (status == CONSOLE_ERROR) {
@@ -72,11 +88,11 @@ static void console(ConsoleStatus status, const char *func_name,
  * @return              : Pointer to allocated memory
  *                      : NULL if there exist no memory for allocation
  */
-static void *allocateMemory(int sizeInByte) {
-    void* ptr = malloc(sizeInByte);
-    if(ptr!=NULL)
-        allocatedMemory+=sizeInByte;
-    return ptr;
+static void* allocateMemory(int sizeInByte) {
+	void *ptr = malloc(sizeInByte);
+	if (ptr != NULL)
+		allocatedMemory += sizeInByte;
+	return ptr;
 }
 
 /**
@@ -86,9 +102,9 @@ static void *allocateMemory(int sizeInByte) {
  * @return              : 1 for success (OR) 0 for failed
  */
 static int freeMemory(void *pointer, int sizeInByte) {
-    free(pointer);
-    allocatedMemory-=sizeInByte;
-    return 1;
+	free(pointer);
+	allocatedMemory -= sizeInByte;
+	return 1;
 }
 
 /***************************PRIVATE*****************************/
@@ -104,16 +120,18 @@ static int getLinkIndex(SyncLayerCanLink *link) {
 static void txCallbackFunc(SyncLayerCanLink *link, SyncLayerCanData *data,
 		uint8_t status) {
 	int link_index = getLinkIndex(link);
+	enableIRQ(); //Enabling interrupt
 	int is_cleared = txCallback[link_index](data->id, data->bytes, data->size,
 			status);
+	disableIRQ(); //Disabling interrupt
 	if (is_cleared) {
 		if (is_in_que[link_index])
 			StaticQueue.dequeue(tx_que[link_index]);
 		else
 			StaticHashMap.delete(tx_map[link_index], data->id);
 		if (data->dynamically_alocated)
-			freeMemory(data->bytes,data->size);
-		freeMemory(data,sizeof(SyncLayerCanData));
+			freeMemory(data->bytes, data->size);
+		freeMemory(data, sizeof(SyncLayerCanData));
 		memory_leak_tx[link_index] -= sizeof(SyncLayerCanData);
 	}
 }
@@ -121,13 +139,15 @@ static void txCallbackFunc(SyncLayerCanLink *link, SyncLayerCanData *data,
 static void rxCallbackFunc(SyncLayerCanLink *link, SyncLayerCanData *data,
 		uint8_t status) {
 	int link_index = getLinkIndex(link);
+	enableIRQ(); //Enabling interrupt
 	int is_cleared = rxCallback[link_index](data->id, data->bytes, data->size,
 			status);
+	disableIRQ(); //Disabling interrupt
 	if (is_cleared) {
 		StaticHashMap.delete(rx_map[link_index], data->id);
 		if (data->dynamically_alocated)
-			freeMemory(data->bytes,data->size);
-		freeMemory(data,sizeof(SyncLayerCanData));
+			freeMemory(data->bytes, data->size);
+		freeMemory(data, sizeof(SyncLayerCanData));
 		memory_leak_rx[link_index] -= sizeof(SyncLayerCanData);
 	}
 }
@@ -211,7 +231,8 @@ static uint8_t pop(SyncLayerCanLink *link) {
 
 	if (!is_in_que[link_index])
 		return 0;
-	SyncLayerCanData *data = (SyncLayerCanData*) StaticQueue.peek(tx_que[link_index]);
+	SyncLayerCanData *data = (SyncLayerCanData*) StaticQueue.peek(
+			tx_que[link_index]);
 	if (data == NULL) {
 		console(CONSOLE_WARNING, __func__, "Data is NULL\n");
 		return 0;
@@ -219,22 +240,22 @@ static uint8_t pop(SyncLayerCanLink *link) {
 	console(CONSOLE_INFO, __func__, "Data of 0x%0x is found\n", data->id);
 	StaticQueue.dequeue(tx_que[link_index]);
 	if (data->dynamically_alocated)
-		freeMemory(data->bytes,data->size);
-	freeMemory(data,sizeof(SyncLayerCanData));
+		freeMemory(data->bytes, data->size);
+	freeMemory(data, sizeof(SyncLayerCanData));
 	memory_leak_tx[link_index] -= sizeof(SyncLayerCanData);
 	return 1;
 }
 
-static int doesExist(Queue* queue,SyncLayerCanData *data){
+static int doesExist(Queue *queue, SyncLayerCanData *data) {
 	int que_size = queue->size;
-	struct QueueData* queData = queue->front;
-	SyncLayerCanData* syncData;
-	for(int i=0;i<que_size;i++){
-		syncData = (SyncLayerCanData *)queData->value;
-		if(syncData->id==data->id)
+	struct QueueData *queData = queue->front;
+	SyncLayerCanData *syncData;
+	for (int i = 0; i < que_size; i++) {
+		syncData = (SyncLayerCanData*) queData->value;
+		if (syncData->id == data->id)
 			return 1;
 		queData = queData->next;
-		if(queData==NULL)
+		if (queData == NULL)
 			break;
 	}
 	return 0;
@@ -248,19 +269,21 @@ static int doesExist(Queue* queue,SyncLayerCanData *data){
  * @param size		: Size of data
  * @return			: 1 if successfully added else 0
  */
-static uint8_t addTxMessage(SyncLayerCanLink *link, uint32_t id,
-		uint8_t *data, uint16_t size) {
+static uint8_t addTxMessage(SyncLayerCanLink *link, uint32_t id, uint8_t *data,
+		uint16_t size) {
 	int link_index = getLinkIndex(link);
 	if (link_index == -1) {
 		console(CONSOLE_ERROR, __func__, "0x%0x link is not found.\n");
 		return 0;
 	}
 
+	disableIRQ();//Disabling interrupt
 	SyncLayerCanData *sync_data = (SyncLayerCanData*) allocateMemory(
 			sizeof(SyncLayerCanData));
 	if (sync_data == NULL) {
 		console(CONSOLE_ERROR, __func__,
 				"Heap is full. Sync Data can't be created\n");
+		enableIRQ();//Enabling interrupt
 		return 0;
 	}
 	memory_leak_tx[link_index] += sizeof(SyncLayerCanData);
@@ -269,6 +292,7 @@ static uint8_t addTxMessage(SyncLayerCanLink *link, uint32_t id,
 	if (data_bytes == NULL) {
 		console(CONSOLE_ERROR, __func__,
 				"Heap is full. data_bytes can't be allocated\n");
+		enableIRQ();//Enabling interrupt
 		return 0;
 	}
 
@@ -276,7 +300,6 @@ static uint8_t addTxMessage(SyncLayerCanLink *link, uint32_t id,
 		*((uint64_t*) data_bytes + i) = *((uint64_t*) data + i);
 	for (uint16_t i = (size / 8) * 8; i < size; i++)
 		data_bytes[i] = data[i];
-
 
 	sync_data->id = id;
 	sync_data->bytes = data_bytes;
@@ -291,39 +314,45 @@ static uint8_t addTxMessage(SyncLayerCanLink *link, uint32_t id,
 		if (!doesExist(tx_que[link_index], sync_data)) {
 			if (StaticQueue.enqueue(tx_que[link_index], sync_data) == NULL) {
 				console(CONSOLE_ERROR, __func__,
-								"Heap is full. Sync data can't be put in que\n");
+						"Heap is full. Sync data can't be put in que\n");
+				enableIRQ();//Enabling interrupt
 				return 0;
 			}
-		}else{
-			freeMemory(data_bytes,sync_data->size);
-			freeMemory(sync_data,sizeof(SyncLayerCanData));
+		} else {
+			freeMemory(data_bytes, sync_data->size);
+			freeMemory(sync_data, sizeof(SyncLayerCanData));
 			memory_leak_tx[link_index] -= sizeof(SyncLayerCanData);
 			console(CONSOLE_INFO, __func__,
-					"Pointer of message with id 0x%0x is already exist updated\n", id);
+					"Pointer of message with id 0x%0x is already exist updated\n",
+					id);
+			enableIRQ();//Enabling interrupt
 			return 0;
 		}
 	} else {
-		if(!StaticHashMap.isKeyExist(tx_map[link_index], id)){
+		if (!StaticHashMap.isKeyExist(tx_map[link_index], id)) {
 			if (StaticHashMap.insert(tx_map[link_index], id, sync_data) == NULL) {
-						console(CONSOLE_ERROR, __func__,
+				console(CONSOLE_ERROR, __func__,
 						"Heap is full. Sync data can't be put in map\n");
+				enableIRQ();//Enabling interrupt
 				return 0;
 			}
-		}else{
-			freeMemory(data_bytes,sync_data->size);
-			freeMemory(sync_data,sizeof(SyncLayerCanData));
+		} else {
+			freeMemory(data_bytes, sync_data->size);
+			freeMemory(sync_data, sizeof(SyncLayerCanData));
 			memory_leak_tx[link_index] -= sizeof(SyncLayerCanData);
 			console(CONSOLE_INFO, __func__,
-									"Pointer of message with id 0x%0x is successfully updated\n", id);
+					"Pointer of message with id 0x%0x is successfully updated\n",
+					id);
+			enableIRQ();//Enabling interrupt
 			return 0;
 		}
 	}
 
 	console(CONSOLE_INFO, __func__,
 			"Message with id 0x%0x is successfully added\n", id);
+	enableIRQ();//Enabling interrupt
 	return 1;
 }
-
 
 /*
  * This will add reference of the data to be transmitted in link
@@ -341,11 +370,13 @@ static uint8_t addTxMessagePtr(SyncLayerCanLink *link, uint32_t id,
 		return 0;
 	}
 
+	disableIRQ();//Disabling interrupt
 	SyncLayerCanData *sync_data = (SyncLayerCanData*) allocateMemory(
 			sizeof(SyncLayerCanData));
 	if (sync_data == NULL) {
 		console(CONSOLE_ERROR, __func__,
 				"Heap is full. Sync Data can't be created\n");
+		enableIRQ();//Enabling interrupt
 		return 0;
 	}
 	memory_leak_tx[link_index] += sizeof(SyncLayerCanData);
@@ -363,33 +394,40 @@ static uint8_t addTxMessagePtr(SyncLayerCanLink *link, uint32_t id,
 		if (!doesExist(tx_que[link_index], sync_data)) {
 			if (StaticQueue.enqueue(tx_que[link_index], sync_data) == NULL) {
 				console(CONSOLE_ERROR, __func__,
-								"Heap is full. Sync data can't be put in que\n");
+						"Heap is full. Sync data can't be put in que\n");
+				enableIRQ();//Enabling interrupt
 				return 0;
 			}
-		}else{
-			freeMemory(sync_data,sizeof(SyncLayerCanData));
+		} else {
+			freeMemory(sync_data, sizeof(SyncLayerCanData));
 			memory_leak_tx[link_index] -= sizeof(SyncLayerCanData);
 			console(CONSOLE_INFO, __func__,
-					"Pointer of message with id 0x%0x is already exist updated\n", id);
+					"Pointer of message with id 0x%0x is already exist updated\n",
+					id);
+			enableIRQ();//Enabling interrupt
 			return 0;
 		}
 	} else {
-		if(!StaticHashMap.isKeyExist(tx_map[link_index], id)){
+		if (!StaticHashMap.isKeyExist(tx_map[link_index], id)) {
 			if (StaticHashMap.insert(tx_map[link_index], id, sync_data) == NULL) {
-						console(CONSOLE_ERROR, __func__,
+				console(CONSOLE_ERROR, __func__,
 						"Heap is full. Sync data can't be put in map\n");
+				enableIRQ();//Enabling interrupt
 				return 0;
 			}
-		}else{
-			freeMemory(sync_data,sizeof(SyncLayerCanData));
+		} else {
+			freeMemory(sync_data, sizeof(SyncLayerCanData));
 			memory_leak_tx[link_index] -= sizeof(SyncLayerCanData);
 			console(CONSOLE_INFO, __func__,
-						"Pointer of message with id 0x%0x is successfully updated\n", id);
+					"Pointer of message with id 0x%0x is successfully updated\n",
+					id);
+			enableIRQ();//Enabling interrupt
 			return 0;
 		}
 	}
 	console(CONSOLE_INFO, __func__,
 			"Pointer of message with id 0x%0x is successfully added\n", id);
+	enableIRQ();//Enabling interrupt
 	return 1;
 }
 
@@ -409,11 +447,13 @@ static uint8_t addRxMessagePtr(SyncLayerCanLink *link, uint32_t id,
 		return 0;
 	}
 
+	disableIRQ();//Disabling interrupt
 	SyncLayerCanData *sync_data = (SyncLayerCanData*) allocateMemory(
 			sizeof(SyncLayerCanData));
 	if (sync_data == NULL) {
 		console(CONSOLE_ERROR, __func__,
 				"Heap is full. Sync Data can't be created\n");
+		enableIRQ();//Enabling interrupt
 		return 0;
 	}
 	memory_leak_rx[link_index] += sizeof(SyncLayerCanData);
@@ -427,22 +467,26 @@ static uint8_t addRxMessagePtr(SyncLayerCanLink *link, uint32_t id,
 	sync_data->data_retry = 0;
 	sync_data->dynamically_alocated = 0;
 
-	if(!StaticHashMap.isKeyExist(rx_map[link_index], id)){
+	if (!StaticHashMap.isKeyExist(rx_map[link_index], id)) {
 		if (StaticHashMap.insert(rx_map[link_index], id, sync_data) == NULL) {
 			console(CONSOLE_ERROR, __func__,
-						"Heap is full. Sync data can't be put\n");
+					"Heap is full. Sync data can't be put\n");
+			enableIRQ();//Enabling interrupt
 			return 0;
 		}
-	}else{
-		freeMemory(sync_data,sizeof(SyncLayerCanData));
+	} else {
+		freeMemory(sync_data, sizeof(SyncLayerCanData));
 		memory_leak_rx[link_index] -= sizeof(SyncLayerCanData);
 		console(CONSOLE_INFO, __func__,
-								"Pointer of message with id 0x%0x is successfully updated\n", id);
+				"Pointer of message with id 0x%0x is successfully updated\n",
+				id);
+		enableIRQ();//Enabling interrupt
 		return 0;
 	}
 	console(CONSOLE_INFO, __func__,
 			"Pointer of message with id 0x%0x is successfully added as container\n",
 			id);
+	enableIRQ();//Enabling interrupt
 	return 1;
 }
 
@@ -455,26 +499,30 @@ static void sendThread(SyncLayerCanLink *link) {
 	int link_index = getLinkIndex(link);
 
 	static uint32_t tick = 0;
-	if((HAL_GetTick()-tick)>3000){
-		printf("##################################################################\n");
-		printf("Tx Memory Leak (%d): %d\n",link_index,(int)memory_leak_tx[link_index]);
-		printf("Rx Memory Leak (%d): %d\n",link_index,(int)memory_leak_rx[link_index]);
-		printf("PN Allocated Memory : %d\n",allocatedMemory);
-		printf("Map Memory : %d\n",StaticHashMap.getAllocatedMemories());
+	if ((HAL_GetTick() - tick) > 3000) {
+		printf(
+				"##################################################################\n");
+		printf("Tx Memory Leak (%d): %d\n", link_index,
+				(int) memory_leak_tx[link_index]);
+		printf("Rx Memory Leak (%d): %d\n", link_index,
+				(int) memory_leak_rx[link_index]);
+		printf("PN Allocated Memory : %d\n", allocatedMemory);
+		printf("Map Memory : %d\n", StaticHashMap.getAllocatedMemories());
 		tick = HAL_GetTick();
 	}
 
-
-	if(memory_leak_tx[link_index]<=MAX_MEMORY){
+	disableIRQ(); //Disabling interrupt
+	if (memory_leak_tx[link_index] <= MAX_MEMORY) {
 		if (is_in_que[link_index]) {
 			/* Transmitting */
 			data = (SyncLayerCanData*) StaticQueue.peek(tx_que[link_index]);
 			if (data == NULL) {
 				console(CONSOLE_WARNING, __func__, "Data is NULL\n");
-			}else{
-				console(CONSOLE_INFO, __func__, "Data of 0x%0x is found\n", data->id);
+			} else {
+				console(CONSOLE_INFO, __func__, "Data of 0x%0x is found\n",
+						data->id);
 				StaticSyncLayerCan.txSendThread(link, data, canSend[link_index],
-									txCallbackFunc);
+						txCallbackFunc);
 			}
 		} else {
 			/* Transmitting */
@@ -482,7 +530,8 @@ static void sendThread(SyncLayerCanLink *link) {
 			int tx_keys[tx_keys_size];
 			StaticHashMap.getKeys(tx_map[link_index], tx_keys);
 			for (int j = 0; j < tx_keys_size; j++) {
-				data = (SyncLayerCanData*) StaticHashMap.get(tx_map[link_index], tx_keys[j]);
+				data = (SyncLayerCanData*) StaticHashMap.get(tx_map[link_index],
+						tx_keys[j]);
 				if (data == NULL) {
 					console(CONSOLE_WARNING, __func__,
 							"Tx Key 0x%0x is not found\n", tx_keys[j]);
@@ -494,13 +543,14 @@ static void sendThread(SyncLayerCanLink *link) {
 						txCallbackFunc);
 			}
 		}
-	}else{
-		console(CONSOLE_ERROR, __func__, "Tx Link %d Memory leak %d exceeds limit %d\n",
-						link_index,memory_leak_tx[link_index],MAX_MEMORY);
+	} else {
+		console(CONSOLE_ERROR, __func__,
+				"Tx Link %d Memory leak %d exceeds limit %d\n", link_index,
+				memory_leak_tx[link_index], MAX_MEMORY);
 	}
 
 	/* Receiving */
-	if(memory_leak_rx[link_index]<=MAX_MEMORY){
+	if (memory_leak_rx[link_index] <= MAX_MEMORY) {
 		int rx_keys_size = rx_map[link_index]->size;
 		int rx_keys[rx_keys_size];
 		StaticHashMap.getKeys(rx_map[link_index], rx_keys);
@@ -508,40 +558,45 @@ static void sendThread(SyncLayerCanLink *link) {
 			data = (SyncLayerCanData*) StaticHashMap.get(rx_map[link_index],
 					rx_keys[j]);
 			if (data == NULL) {
-				console(CONSOLE_WARNING, __func__, "Rx Key 0x%0x is not found\n",
-						rx_keys[j]);
+				console(CONSOLE_WARNING, __func__,
+						"Rx Key 0x%0x is not found\n", rx_keys[j]);
 				continue;
 			}
-			console(CONSOLE_INFO, __func__, "Rx Key 0x%0x is found\n", rx_keys[j]);
+			console(CONSOLE_INFO, __func__, "Rx Key 0x%0x is found\n",
+					rx_keys[j]);
 			StaticSyncLayerCan.rxSendThread(link, data, canSend[link_index],
 					rxCallbackFunc);
 		}
-	}else{
-		console(CONSOLE_ERROR, __func__, "Rx Link %d Memory leak %d exceeds limit %d\n",
-								link_index,memory_leak_rx[link_index],
-								MAX_MEMORY);
+	} else {
+		console(CONSOLE_ERROR, __func__,
+				"Rx Link %d Memory leak %d exceeds limit %d\n", link_index,
+				memory_leak_rx[link_index],
+				MAX_MEMORY);
 	}
+	enableIRQ(); //Enabling interrupt
 }
 
 /*
  * This should be called in thread or timer periodically after data is received from CAN
  * @param link	: Link where data is to be transmitted or received
  */
-static void recThread(SyncLayerCanLink *link, uint32_t id,
-		uint8_t *bytes, uint16_t len) {
+static void recThread(SyncLayerCanLink *link, uint32_t id, uint8_t *bytes,
+		uint16_t len) {
 	SyncLayerCanData *data;
 	int link_index = getLinkIndex(link);
-	if(link_index<0){
-		console(CONSOLE_ERROR, __func__,
-						"link index is negative : %d\n",link_index);
+	if (link_index < 0) {
+		console(CONSOLE_ERROR, __func__, "link index is negative : %d\n",
+				link_index);
 		return;
 	}
 
 	uint32_t data_id = id;
 
 	/* Transmitting */
-	uint8_t is_transmit = (link->start_ack_ID == id) || (link->data_ack_ID == id)
-			|| (link->data_count_reset_ack_ID == id) || (link->end_ack_ID == id);
+	uint8_t is_transmit = (link->start_ack_ID == id)
+			|| (link->data_ack_ID == id)
+			|| (link->data_count_reset_ack_ID == id)
+			|| (link->end_ack_ID == id);
 	if (is_transmit) {
 		if (is_in_que[link_index]) {
 			data_id = *(uint32_t*) bytes;
@@ -566,7 +621,8 @@ static void recThread(SyncLayerCanLink *link, uint32_t id,
 
 	/* Receiving */
 	uint8_t is_receive = (link->start_req_ID == id)
-			|| (link->data_count_reset_req_ID == id) || (link->end_req_ID == id);
+			|| (link->data_count_reset_req_ID == id)
+			|| (link->end_req_ID == id);
 	if (is_receive) {
 		//Is protocol id
 		data_id = *(uint32_t*) bytes;
@@ -600,31 +656,25 @@ static void recThread(SyncLayerCanLink *link, uint32_t id,
 			console(CONSOLE_ERROR, __func__, "Data doesn't exist in rx_map\n");
 			return;
 		}
-		StaticSyncLayerCan.rxReceiveThread(links[link_index], data, id, bytes, len);
+		StaticSyncLayerCan.rxReceiveThread(links[link_index], data, id, bytes,
+				len);
 		return;
 	}
 	data = StaticHashMap.get(rx_map[link_index], data_id);
 	if (data == NULL) {
-		console(CONSOLE_WARNING, __func__, "Data doesn't exist in rx_map\n");
+		console(CONSOLE_INFO, __func__, "Data doesn't exist in rx_map\n");
 		return;
 	}
 	StaticSyncLayerCan.rxReceiveThread(links[link_index], data, id, bytes, len);
 	return;
 }
 
-int getAllocatedMemories(){
+int getAllocatedMemories() {
 	return allocatedMemory;
 }
 
-struct CanProtocolControl StaticCanProtocol = {
-		.addLink = addLink,
-		.pop = pop,
-		.addTxMessage = addTxMessage,
-		.addTxMessagePtr = addTxMessagePtr,
-		.addRxMessagePtr = addRxMessagePtr,
-		.sendThread = sendThread,
-		.recThread = recThread,
-		.getAllocatedMemories = getAllocatedMemories
-};
-
+struct CanProtocolControl StaticCanProtocol = { .addLink = addLink, .pop = pop,
+		.addTxMessage = addTxMessage, .addTxMessagePtr = addTxMessagePtr,
+		.addRxMessagePtr = addRxMessagePtr, .sendThread = sendThread,
+		.recThread = recThread, .getAllocatedMemories = getAllocatedMemories };
 

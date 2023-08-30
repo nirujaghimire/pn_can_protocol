@@ -17,26 +17,6 @@
 
 #define SYNC_LAYER_CAN_TX_SEND_RETRY 3
 
-
-static uint32_t prim;
-static void enableIRQ(){
-//	NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn);
-	if(!prim)
-		__enable_irq();
-}
-
-static void disableIRQ(){
-//	NVIC_DisableIRQ(USB_LP_CAN1_RX0_IRQn);
-
-	prim = __get_PRIMASK();
-	 __disable_irq();
-
-
-}
-
-
-
-
 /******************CONSOLE*****************************/
 typedef enum {
 	CONSOLE_ERROR, CONSOLE_INFO, CONSOLE_WARNING
@@ -90,14 +70,12 @@ static uint8_t txSendThread(SyncLayerCanLink *link,
 		void (*txCallback)(SyncLayerCanLink *link, SyncLayerCanData *data,
 				uint8_t status)) {
 
-	disableIRQ();//Disabling interrupt
 	uint8_t bytes[8] = { 0 };
 	SyncLayerCanTrack prev_track = data->track;
 
 	/* Check success */
 	if (data->track == SYNC_LAYER_CAN_TRANSMIT_SUCCESS) {
 		txCallback(link, data, 1);
-		enableIRQ();//Enabling interrupt
 		return 1;
 	} else if (data->track == SYNC_LAYER_CAN_TRANSMIT_FAILED) {
 		if (data->data_retry > SYNC_LAYER_CAN_TX_SEND_RETRY) {
@@ -105,7 +83,6 @@ static uint8_t txSendThread(SyncLayerCanLink *link,
 			console(CONSOLE_ERROR, __func__, "Sending failed exceed limit %d\n",
 					data->data_retry);
 			txCallback(link, data, 0);
-			enableIRQ();//Enabling interrupt
 			return 1;
 		} else {
 			/* Retry available */
@@ -208,7 +185,6 @@ static uint8_t txSendThread(SyncLayerCanLink *link,
 				data->id, SYNC_LAYER_CAN_TRANSMIT_TIMEOUT);
 		data->track = SYNC_LAYER_CAN_TRANSMIT_FAILED;
 	}
-	enableIRQ();//Enabling interrupt
 	return 0;
 }
 
@@ -338,16 +314,13 @@ static uint8_t rxSendThread(SyncLayerCanLink *link,
 		uint8_t (*canSend)(uint32_t id, uint8_t *bytes, uint8_t len),
 		void (*rxCallback)(SyncLayerCanLink *link, SyncLayerCanData *data,
 				uint8_t status)) {
-	disableIRQ();//Disabling interrupt
 	uint8_t bytes[8] = { 0 };
 	SyncLayerCanTrack prev_track = data->track;
 	if (data->track == SYNC_LAYER_CAN_RECEIVE_SUCCESS) {
 		rxCallback(link, data, 1);
-		enableIRQ();//Enabling interrupt
 		return 1;
 	} else if (data->track == SYNC_LAYER_CAN_RECEIVE_FAILED) {
 		rxCallback(link, data, 0);
-		enableIRQ();//Enabling interrupt
 		return 1;
 	}
 
@@ -442,7 +415,6 @@ static uint8_t rxSendThread(SyncLayerCanLink *link,
 		data->track = SYNC_LAYER_CAN_RECEIVE_FAILED;
 	}
 
-	enableIRQ();//Enabling interrupt
 	return 0;
 }
 
