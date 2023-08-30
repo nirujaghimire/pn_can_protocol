@@ -7,6 +7,7 @@
 
 #include "pn_can_protocol.h"
 #include "main.h"
+#include "malloc.h"
 
 static SyncLayerCanLink link1 = { 1, 2, 3, 4, 5, 6, 7 };
 static SyncLayerCanLink link2 = { 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17 };
@@ -164,8 +165,8 @@ static void runRx() {
 }
 
 static void runTx() {
-	StaticCanProtocol.addLink(&link1, canSend, txCallback1, rxCallback1, 1);
-	StaticCanProtocol.addLink(&link2, canSend, txCallback2, rxCallback2, 1);
+	StaticCanProtocol.addLink(&link1, canSend, txCallback1, rxCallback1, 0);
+	StaticCanProtocol.addLink(&link2, canSend, txCallback2, rxCallback2, 0);
 	canInit();
 
 	console("\n\nSOURCE INIT", "SUCCESS");
@@ -174,7 +175,7 @@ static void runTx() {
 	uint32_t tick = HAL_GetTick();
 	while (1) {
 		uint32_t tock = HAL_GetTick();
-		if ((tock - tick) >= 10) {
+		if ((tock - tick) >= 100) {
 			StaticCanProtocol.addTxMessagePtr(&link1, 0xA, tx_bytes1,
 					sizeof(tx_bytes1));
 			StaticCanProtocol.addTxMessagePtr(&link1, 0xB, tx_bytes2,
