@@ -138,8 +138,8 @@ static uint8_t tx_bytes2[16] = { 1, 5, 3, 7 };
 static uint8_t tx_bytes3[16] = { 2, 4, 6, 8 };
 
 static void runRx() {
-	StaticCanProtocol.addLink(&link1, canSend, txCallback1, rxCallback1, 0);
-	StaticCanProtocol.addLink(&link2, canSend, txCallback2, rxCallback2, 0);
+	StaticCanProtocol.addLink(NULL,&link1, canSend, txCallback1, rxCallback1, 0);
+	StaticCanProtocol.addLink(NULL,&link2, canSend, txCallback2, rxCallback2, 0);
 	canInit();
 
 	console("\n\nSOURCE INIT", "SUCCESS");
@@ -164,16 +164,28 @@ static void runRx() {
 	}
 }
 
+HeapMemory memory[4*1024];
+HeapMemoryMap map[50];
+Heap heap;
+
 static void runTx() {
-	StaticCanProtocol.addLink(&link1, canSend, txCallback1, rxCallback1, 0);
-	StaticCanProtocol.addLink(&link2, canSend, txCallback2, rxCallback2, 0);
+	StaticHeap.init(&heap, map, 20, memory, 1024);
+	StaticCanProtocol.addLink(&heap,&link1, canSend, txCallback1, rxCallback1, 0);
+	StaticCanProtocol.addLink(&heap,&link2, canSend, txCallback2, rxCallback2, 0);
 	canInit();
 
 	console("\n\nSOURCE INIT", "SUCCESS");
 	HAL_Delay(1000);
 
 	uint32_t tick = HAL_GetTick();
+	uint32_t prev_milis = HAL_GetTick();
 	while (1) {
+		uint32_t current_milis = HAL_GetTick();
+		if((current_milis-prev_milis)>1000){
+			printf("###################################################################\n");
+			StaticHeap.printMemoryMap(heap);
+			prev_milis = HAL_GetTick();
+		}
 		uint32_t tock = HAL_GetTick();
 		if ((tock - tick) >= 100) {
 			StaticCanProtocol.addTxMessagePtr(&link1, 0xA, tx_bytes1,

@@ -5,6 +5,8 @@
 #ifndef C_LIB_QUEUE_H
 #define C_LIB_QUEUE_H
 
+#include "static_heap.h"
+
 
 #define QueueType void*
 #define QUEUE_NULL NULL
@@ -18,6 +20,7 @@ typedef struct {
     int size;
     struct QueueData *front;
     struct QueueData *back;
+    Heap*heap;
 } Queue;
 
 struct QueueControl {
@@ -27,7 +30,7 @@ struct QueueControl {
      * @printEachElementFunc : Call back function called for each data when print is called
      * @return : Allocated Queue (!!! Must be free using free) (OR) NULL if heap is full
      */
-    Queue *(*new)(void (*printEachElementFunc)(QueueType value));
+    Queue *(*new)(Heap*heap,void (*printEachElementFunc)(QueueType value));
 
     /**
      * Computation Cost : O(1)\n

@@ -10,10 +10,12 @@
 
 #include "stdint.h"
 #include "pn_can_sync_layer.h"
+#include "static_heap.h"
 
 struct CanProtocolControl {
 	/**
 	 * This will add the link
+	 * @param heap 			: Pointer of static heap (OR) null for heap use
 	 * @param link			: Link where data is to be transmitted or received
 	 * @param canSendFunc	: Function that sends can
 	 * @param txCallbackFunc: Function that is called after data is transmitted successfully or failed to transmit successfully
@@ -21,7 +23,7 @@ struct CanProtocolControl {
 	 * @param is_que		: 1 for use of que in transmit side else uses map
 	 * @return				: 1 if everything OK else 0
 	 */
-	uint8_t (*addLink)(SyncLayerCanLink *link,
+	uint8_t (*addLink)(Heap *heap,SyncLayerCanLink *link,
 			uint8_t (*canSendFunc)(uint32_t id, uint8_t *bytes, uint8_t len),
 			uint8_t (*txCallbackFunc)(uint32_t id, uint8_t *bytes,
 					uint16_t size, uint8_t status),

@@ -5,6 +5,8 @@
 #ifndef C_LIB_HASH_MAP_H
 #define C_LIB_HASH_MAP_H
 
+#include "static_heap.h"
+
 #define HASH_MAP_SIZE 3
 #define HashMapType void*
 #define HASH_MAP_NULL NULL
@@ -15,9 +17,12 @@ struct HashMapEntry {
     struct HashMapEntry *nextEntry;
 };
 
+
 struct HashMap {
     int size;
     struct HashMapEntry *entries[HASH_MAP_SIZE];
+    Heap* heap;
+
 };
 typedef struct HashMap HashMap;
 
@@ -25,9 +30,10 @@ struct HashMapControl {
     /**
      * Computation Cost : O(1)\n
      * It allocates the memory for HashMap and return allocated HashMap
+     * @param heap : Pointer of static heap (OR) null for heap use
      * @return : Allocated HashMap (!!! Must be free using free ) (OR) NULL if heap is full
      */
-    HashMap *(*new)();
+    HashMap *(*new)(Heap* heap);
 
     /**
      * Computation Cost : O(1)\n

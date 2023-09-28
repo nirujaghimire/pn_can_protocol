@@ -14,31 +14,30 @@ typedef struct QueueData QueueData;
 
 /**
  * It allocates the memory and return pointer to it
- * @param sideInByte    : Size in bytes
+ * @param heap : Pointer of static heap (OR) null for heap use
+ * @param sizeInByte    : Size in bytes
  * @return              : Pointer to allocated memory
  *                      : NULL if there exist no memory for allocation
  */
-static void *allocateMemory(int sizeInByte) {
-    if(sizeInByte<=0)
-        return NULL;
-    void* ptr = malloc(sizeInByte);
-    if(ptr!=NULL)
-        allocatedMemory+=sizeInByte;
-    return ptr;
+static void* allocateMemory(Heap *heap,int sizeInByte) {
+	void *ptr;
+	ptr = heap!=NULL?StaticHeap.malloc(heap,sizeInByte):malloc(sizeInByte);
+	if (ptr != NULL)
+		allocatedMemory += sizeInByte;
+	return ptr;
 }
 
 /**
  * It free the allocated memory
+ * @param heap : Pointer of static heap (OR) null for heap use
  * @param pointer       : Pointer to allocated Memory
  * @param sizeInByte    : Size to be freed
  * @return              : 1 for success (OR) 0 for failed
  */
-static int freeMemory(void *pointer, int sizeInByte) {
-    if(pointer==NULL || sizeInByte<=0)
-        return 0;
-    free(pointer);
-    allocatedMemory-=sizeInByte;
-    return 1;
+static int freeMemory(Heap *heap, void *pointer, int sizeInByte) {
+	heap!=NULL?StaticHeap.free(heap,pointer):free(pointer);
+	allocatedMemory -= sizeInByte;
+	return 1;
 }
 
 /**
@@ -47,13 +46,14 @@ static int freeMemory(void *pointer, int sizeInByte) {
  * @printEachElementFunc : Call back function called for each data when print is called
  * @return : Allocated Queue (!!! Must be free using free) (OR) NULL if heap is full
  */
-static Queue *new(void (*printEachElementFunc)(QueueType value)) {
+static Queue *new(Heap* heap,void (*printEachElementFunc)(QueueType value)) {
     //Allocate memory for hash map
-    Queue *queue = allocateMemory(sizeof(Queue));
+    Queue *queue = allocateMemory(heap,sizeof(Queue));
 
     //Heap is full
     if (queue == NULL)
         return NULL;
+    queue->heap=heap;
 
     queue->printEachElement=printEachElementFunc;
 
@@ -79,7 +79,7 @@ static Queue *enqueue(Queue *queue, QueueType value) {
         return NULL;
 
     //Allocate Memory for newData
-    QueueData *newData = allocateMemory(sizeof(QueueData));
+    QueueData *newData = allocateMemory(queue->heap,sizeof(QueueData));
 
     //If heap is full then return NULL
     if (newData == NULL)
@@ -129,7 +129,7 @@ static QueueType dequeue(Queue *queue) {
         queue->front = frontData->next;
 
         //Deallocate the allocated memory by front data
-        freeMemory(frontData, sizeof(QueueData));
+        freeMemory(queue->heap,frontData, sizeof(QueueData));
 
         //Decrease the size of queue
         queue->size--;
@@ -177,7 +177,7 @@ static int freeQue(Queue **queuePtr) {
     //If queue is empty
     if (size == 0) {
         //Free hash map memory
-        freeMemory(queue, sizeof(Queue));
+        freeMemory(queue->heap,queue, sizeof(Queue));
         *queuePtr = NULL;
         return 1;
     }
@@ -187,7 +187,7 @@ static int freeQue(Queue **queuePtr) {
         dequeue(queue);
 
     //Free memory for queue
-    freeMemory(queue, sizeof(Queue));
+    freeMemory(queue->heap,queue, sizeof(Queue));
 
     *queuePtr = NULL;
 
