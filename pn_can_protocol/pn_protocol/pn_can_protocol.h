@@ -10,7 +10,7 @@
 
 #include "stdint.h"
 #include "pn_can_sync_layer.h"
-#include "static_heap.h"
+#include "buddy_heap.h"
 
 struct CanProtocolControl {
 	/**
@@ -23,12 +23,7 @@ struct CanProtocolControl {
 	 * @param is_que		: 1 for use of que in transmit side else uses map
 	 * @return				: 1 if everything OK else 0
 	 */
-	uint8_t (*addLink)(Heap *heap,SyncLayerCanLink *link,
-			uint8_t (*canSendFunc)(uint32_t id, uint8_t *bytes, uint8_t len),
-			uint8_t (*txCallbackFunc)(uint32_t id, uint8_t *bytes,
-					uint16_t size, uint8_t status),
-			uint8_t (*rxCallbackFunc)(uint32_t id, uint8_t *bytes,
-					uint16_t size, uint8_t status), uint8_t is_que);
+	uint8_t (*addLink)(BuddyHeap *heap, SyncLayerCanLink *link, uint8_t (*canSendFunc)(uint32_t id, uint8_t *bytes, uint8_t len), uint8_t (*txCallbackFunc)(uint32_t id, uint8_t *bytes, uint16_t size, uint8_t status), uint8_t (*rxCallbackFunc)(uint32_t id, uint8_t *bytes, uint16_t size, uint8_t status), uint8_t is_que);
 
 	/**
 	 * This will pop the data in link
@@ -44,8 +39,7 @@ struct CanProtocolControl {
 	 * @param size		: Size of data
 	 * @return			: 1 if successfully added else 0
 	 */
-	uint8_t (*addTxMessage)(SyncLayerCanLink *link, uint32_t id,
-			uint8_t *data, uint16_t size);
+	uint8_t (*addTxMessage)(SyncLayerCanLink *link, uint32_t id, uint8_t *data, uint16_t size);
 
 	/*
 	 * This will add reference of the data to be transmitted in link
@@ -55,8 +49,7 @@ struct CanProtocolControl {
 	 * @param size		: Size of data
 	 * @return			: 1 if successfully added else 0
 	 */
-	uint8_t (*addTxMessagePtr)(SyncLayerCanLink *link, uint32_t id,
-			uint8_t *data, uint16_t size);
+	uint8_t (*addTxMessagePtr)(SyncLayerCanLink *link, uint32_t id, uint8_t *data, uint16_t size);
 	/*
 	 * This will add reference of the data as container to be received in link
 	 * @param link		: Link where data is to be received
@@ -65,21 +58,21 @@ struct CanProtocolControl {
 	 * @param size		: Size of data
 	 * @return			: 1 if successfully added else 0
 	 */
-	uint8_t (*addRxMessagePtr)(SyncLayerCanLink *link, uint32_t id,
-			uint8_t *data, uint16_t size);
+	uint8_t (*addRxMessagePtr)(SyncLayerCanLink *link, uint32_t id, uint8_t *data, uint16_t size);
 
 	/*
 	 * This should be called in thread or timer periodically
 	 * @param link	: Link where data is to be transmitted or received
 	 */
-	void (*sendThread)(SyncLayerCanLink *link);
+	void (*thread)(SyncLayerCanLink *link);
 
 	/*
-	 * This should be called in thread or timer periodically after data is received from CAN
+	 * This should be called after data is received from CAN
 	 * @param link	: Link where data is to be transmitted or received
+	 * @param id	: CAN ID
+	 * @param bytes	: data of 8 bytes
 	 */
-	void (*recThread)(SyncLayerCanLink *link, uint32_t id,
-			uint8_t *bytes, uint16_t len);
+	void (*recCAN)(SyncLayerCanLink *link, uint32_t id, uint8_t *bytes);
 
 	/**
 	 * This return allocated memory for hash map till now
@@ -89,12 +82,9 @@ struct CanProtocolControl {
 
 };
 
-
-
 extern struct CanProtocolControl StaticCanProtocol;
 
-
-struct CanProtocolTest{
+struct CanProtocolTest {
 	void (*canRxInterrupt)();
 	void (*runRx)();
 	void (*runTx)();

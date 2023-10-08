@@ -19,9 +19,9 @@ typedef struct QueueData QueueData;
  * @return              : Pointer to allocated memory
  *                      : NULL if there exist no memory for allocation
  */
-static void* allocateMemory(Heap *heap,int sizeInByte) {
+static void* allocateMemory(BuddyHeap *heap, int sizeInByte) {
 	void *ptr;
-	ptr = heap!=NULL?StaticHeap.malloc(heap,sizeInByte):malloc(sizeInByte);
+	ptr = heap != NULL ? StaticBuddyHeap.malloc(heap, sizeInByte) : malloc(sizeInByte);
 	if (ptr != NULL)
 		allocatedMemory += sizeInByte;
 	return ptr;
@@ -34,8 +34,8 @@ static void* allocateMemory(Heap *heap,int sizeInByte) {
  * @param sizeInByte    : Size to be freed
  * @return              : 1 for success (OR) 0 for failed
  */
-static int freeMemory(Heap *heap, void *pointer, int sizeInByte) {
-	heap!=NULL?StaticHeap.free(heap,pointer):free(pointer);
+static int freeMemory(BuddyHeap *heap, void *pointer, int sizeInByte) {
+	heap != NULL ? StaticBuddyHeap.free(heap, pointer) : free(pointer);
 	allocatedMemory -= sizeInByte;
 	return 1;
 }
@@ -46,24 +46,24 @@ static int freeMemory(Heap *heap, void *pointer, int sizeInByte) {
  * @printEachElementFunc : Call back function called for each data when print is called
  * @return : Allocated Queue (!!! Must be free using free) (OR) NULL if heap is full
  */
-static Queue *new(Heap* heap,void (*printEachElementFunc)(QueueType value)) {
-    //Allocate memory for hash map
-    Queue *queue = allocateMemory(heap,sizeof(Queue));
+static Queue* new(BuddyHeap *heap, void (*printEachElementFunc)(QueueType value)) {
+	//Allocate memory for hash map
+	Queue *queue = allocateMemory(heap, sizeof(Queue));
 
-    //Heap is full
-    if (queue == NULL)
-        return NULL;
-    queue->heap=heap;
+	//Heap is full
+	if (queue == NULL)
+		return NULL;
+	queue->heap = heap;
 
-    queue->printEachElement=printEachElementFunc;
+	queue->printEachElement = printEachElementFunc;
 
-    //Making both front and back null
-    queue->front = NULL;
-    queue->back = NULL;
+	//Making both front and back null
+	queue->front = NULL;
+	queue->back = NULL;
 
-    //Make initial size zero
-    queue->size = 0;
-    return queue;
+	//Make initial size zero
+	queue->size = 0;
+	return queue;
 }
 
 /**
@@ -73,36 +73,36 @@ static Queue *new(Heap* heap,void (*printEachElementFunc)(QueueType value)) {
  * @param value     : Value to be added in queue
  * @return          : Same que (OR) NULL if heap is full or queue is null
  */
-static Queue *enqueue(Queue *queue, QueueType value) {
-    //If map is NULL then return NULL
-    if (queue == NULL)
-        return NULL;
+static Queue* enqueue(Queue *queue, QueueType value) {
+	//If map is NULL then return NULL
+	if (queue == NULL)
+		return NULL;
 
-    //Allocate Memory for newData
-    QueueData *newData = allocateMemory(queue->heap,sizeof(QueueData));
+	//Allocate Memory for newData
+	QueueData *newData = allocateMemory(queue->heap, sizeof(QueueData));
 
-    //If heap is full then return NULL
-    if (newData == NULL)
-        return NULL;
+	//If heap is full then return NULL
+	if (newData == NULL)
+		return NULL;
 
-    //Fill the value in data
-    newData->value = value;
-    newData->next = NULL;//make next data is empty
+	//Fill the value in data
+	newData->value = value;
+	newData->next = NULL; //make next data is empty
 
-    //Get the last data
-    if (queue->size == 0) {
-        //If que is empty
-        queue->front = newData;
-        queue->back = newData;
-    } else {
-        queue->back->next = newData;
-        queue->back = newData;
-    }
-    //If data is added then increase the size
-    queue->size++;
+	//Get the last data
+	if (queue->size == 0) {
+		//If que is empty
+		queue->front = newData;
+		queue->back = newData;
+	} else {
+		queue->back->next = newData;
+		queue->back = newData;
+	}
+	//If data is added then increase the size
+	queue->size++;
 
-    //Return same @queue
-    return queue;
+	//Return same @queue
+	return queue;
 }
 
 /**
@@ -112,33 +112,33 @@ static Queue *enqueue(Queue *queue, QueueType value) {
  * @return          : Element in front (OR) QUE_NULL if queue is empty or queue is null
  */
 static QueueType dequeue(Queue *queue) {
-    //If map is NULL then return NULL
-    if (queue == NULL)
-        return QUEUE_NULL;
+	//If map is NULL then return NULL
+	if (queue == NULL)
+		return QUEUE_NULL;
 
-    //Get the last data
-    if (queue->size == 0) {
-        //If que is empty
-        return QUEUE_NULL;
-    } else {
-        //Get the front data of queue
-        QueueData *frontData = queue->front;
-        QueueType value = frontData->value;
+	//Get the last data
+	if (queue->size == 0) {
+		//If que is empty
+		return QUEUE_NULL;
+	} else {
+		//Get the front data of queue
+		QueueData *frontData = queue->front;
+		QueueType value = frontData->value;
 
-        //Put front second data in the front
-        queue->front = frontData->next;
+		//Put front second data in the front
+		queue->front = frontData->next;
 
-        //Deallocate the allocated memory by front data
-        freeMemory(queue->heap,frontData, sizeof(QueueData));
+		//Deallocate the allocated memory by front data
+		freeMemory(queue->heap, frontData, sizeof(QueueData));
 
-        //Decrease the size of queue
-        queue->size--;
-        if(queue->size==0) {
-            queue->front = NULL;
-            queue->back = NULL;
-        }
-        return value;
-    }
+		//Decrease the size of queue
+		queue->size--;
+		if (queue->size == 0) {
+			queue->front = NULL;
+			queue->back = NULL;
+		}
+		return value;
+	}
 }
 
 /**
@@ -148,17 +148,17 @@ static QueueType dequeue(Queue *queue) {
  * @return          : Element in front (OR) QUE_NULL if queue is empty or queue is null
  */
 static QueueType peek(Queue *queue) {
-    //If map is NULL then return NULL
-    if (queue == NULL)
-        return QUEUE_NULL;
+	//If map is NULL then return NULL
+	if (queue == NULL)
+		return QUEUE_NULL;
 
-    if (queue->size == 0) {
-        //If que is empty
-        return QUEUE_NULL;
-    } else {
-        //Return the front element of queue
-        return queue->front->value;
-    }
+	if (queue->size == 0) {
+		//If que is empty
+		return QUEUE_NULL;
+	} else {
+		//Return the front element of queue
+		return queue->front->value;
+	}
 }
 
 /**
@@ -168,30 +168,30 @@ static QueueType peek(Queue *queue) {
  * @return          : 1 for success (OR) 0 for failed
  */
 static int freeQue(Queue **queuePtr) {
-    Queue *queue = *queuePtr;
-    //If queue is NULL
-    if (queue == NULL)
-        return 0;
+	Queue *queue = *queuePtr;
+	//If queue is NULL
+	if (queue == NULL)
+		return 0;
 
-    int size = queue->size;
-    //If queue is empty
-    if (size == 0) {
-        //Free hash map memory
-        freeMemory(queue->heap,queue, sizeof(Queue));
-        *queuePtr = NULL;
-        return 1;
-    }
+	int size = queue->size;
+	//If queue is empty
+	if (size == 0) {
+		//Free hash map memory
+		freeMemory(queue->heap, queue, sizeof(Queue));
+		*queuePtr = NULL;
+		return 1;
+	}
 
-    //Delete all data
-    for (int i = 0; i < size; ++i)
-        dequeue(queue);
+	//Delete all data
+	for (int i = 0; i < size; ++i)
+		dequeue(queue);
 
-    //Free memory for queue
-    freeMemory(queue->heap,queue, sizeof(Queue));
+	//Free memory for queue
+	freeMemory(queue->heap, queue, sizeof(Queue));
 
-    *queuePtr = NULL;
+	*queuePtr = NULL;
 
-    return 1; //freeing memory success
+	return 1; //freeing memory success
 }
 
 /**
@@ -201,64 +201,54 @@ static int freeQue(Queue **queuePtr) {
  * @param value     : Value to be added in queue
  * @return          : 1 if exists (OR) 0 else wise
  */
-static int doesExist(Queue *queue, QueueType value){
-    if(value==QUEUE_NULL)
-        return 0;
-    //If map is NULL then return NULL
-    if (queue == NULL)
-        return 0;
+static int doesExist(Queue *queue, QueueType value) {
+	if (value == QUEUE_NULL)
+		return 0;
+	//If map is NULL then return NULL
+	if (queue == NULL)
+		return 0;
 
-    if (queue->size == 0) {
-        //If que is empty
-        return 0;
-    } else {
-        QueueData *data = queue->front;
-        for (int i = 0; i <queue->size; ++i) {
-            if(data->value==value)
-                return 1;
-            data=data->next;
-        }
-        return 0;
-    }
+	if (queue->size == 0) {
+		//If que is empty
+		return 0;
+	} else {
+		QueueData *data = queue->front;
+		for (int i = 0; i < queue->size; ++i) {
+			if (data->value == value)
+				return 1;
+			data = data->next;
+		}
+		return 0;
+	}
 }
 
 /**
  * This will print the contents of que
  * @param queue : Queue to be printed
  */
-static void print(Queue *queue){
-    if(queue==NULL)
-        return;
+static void print(Queue *queue) {
+	if (queue == NULL)
+		return;
 
-    if(queue->printEachElement==NULL)
-        return;
+	if (queue->printEachElement == NULL)
+		return;
 
-    QueueData* data = queue->front;
-    for (int i = 0; i < queue->size; ++i) {
-        if(data==NULL)
-            break;
-        queue->printEachElement(data->value);
-        data=data->next;
-    }
+	QueueData *data = queue->front;
+	for (int i = 0; i < queue->size; ++i) {
+		if (data == NULL)
+			break;
+		queue->printEachElement(data->value);
+		data = data->next;
+	}
 }
 
 /**
  * This return allocated memory for queue till now
  * @return  : Allocated memories
  */
-static int getAllocatedMemories(){
-    return allocatedMemory;
+static int getAllocatedMemories() {
+	return allocatedMemory;
 }
 
-
-struct QueueControl StaticQueue = {
-        .new=new,
-        .enqueue = enqueue,
-        .dequeue = dequeue,
-        .peek = peek,
-        .free=freeQue,
-        .doesExist=doesExist,
-        .print=print,
-        .getAllocatedMemories=getAllocatedMemories
-};
+struct QueueControl StaticQueue = { .new = new, .enqueue = enqueue, .dequeue = dequeue, .peek = peek, .free = freeQue, .doesExist = doesExist, .print = print, .getAllocatedMemories = getAllocatedMemories };
 
