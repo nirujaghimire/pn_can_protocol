@@ -12,10 +12,10 @@
 #include "test.h"
 
 
-#define SYNC_LAYER_CAN_TRANSMIT_TIMEOUT 2000
+#define SYNC_LAYER_CAN_TRANSMIT_TIMEOUT 1000
 #define SYNC_LAYER_CAN_RECEIVE_TIMEOUT 2000
 
-#define SYNC_LAYER_CAN_TX_SEND_RETRY 3
+#define SYNC_LAYER_CAN_TX_SEND_RETRY 2
 
 /******************CONSOLE*****************************/
 typedef enum {
@@ -314,6 +314,7 @@ static uint8_t rxSendThread(SyncLayerCanLink *link,
 		uint8_t (*canSend)(uint32_t id, uint8_t *bytes, uint8_t len),
 		void (*rxCallback)(SyncLayerCanLink *link, SyncLayerCanData *data,
 				uint8_t status)) {
+
 	uint8_t bytes[8] = { 0 };
 	SyncLayerCanTrack prev_track = data->track;
 	if (data->track == SYNC_LAYER_CAN_RECEIVE_SUCCESS) {
