@@ -191,14 +191,14 @@ static void runTx() {
 			printQueue();
 		}
 		uint32_t tock = HAL_GetTick();
-		if ((tock - tick) >= 10) {
-			StaticCanProtocol.addTxMessagePtr(&link1, 0xA, tx_bytes1, sizeof(tx_bytes1));
-			StaticCanProtocol.addTxMessagePtr(&link1, 0xB, tx_bytes2, sizeof(tx_bytes2));
-			StaticCanProtocol.addTxMessagePtr(&link1, 0xC, tx_bytes3, sizeof(tx_bytes3));
-			StaticCanProtocol.addTxMessagePtr(&link2, 0xD, tx_bytes4, sizeof(tx_bytes4));
-			StaticCanProtocol.addTxMessagePtr(&link2, 0xE, tx_bytes3, sizeof(tx_bytes3));
-			tick = tock;
-		};
+//		if ((tock - tick) >= 100) {
+		StaticCanProtocol.addTxMessagePtr(&link1, 0xA, tx_bytes1, sizeof(tx_bytes1));
+		StaticCanProtocol.addTxMessagePtr(&link1, 0xB, tx_bytes2, sizeof(tx_bytes2));
+		StaticCanProtocol.addTxMessagePtr(&link1, 0xC, tx_bytes3, sizeof(tx_bytes3));
+		StaticCanProtocol.addTxMessagePtr(&link2, 0xD, tx_bytes4, sizeof(tx_bytes4));
+		StaticCanProtocol.addTxMessagePtr(&link2, 0xE, tx_bytes3, sizeof(tx_bytes3));
+		tick = tock;
+//		};
 		StaticCanProtocol.thread(&link1);
 		StaticCanProtocol.thread(&link2);
 	}

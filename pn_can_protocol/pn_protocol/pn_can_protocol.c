@@ -272,14 +272,9 @@ static int doesIDExistInMap(HashMap *map, uint32_t ID) {
 	return StaticHashMap.isKeyExist(map, ID);
 }
 
-static int isLinkRequestID(int linkIndex, uint32_t ID) {
+static int isLinkID(int linkIndex, uint32_t ID) {
 	SyncLayerCanLink *link = links[linkIndex];
-	return link->start_req_ID == ID || link->data_count_reset_req_ID == ID || link->end_req_ID == ID;
-}
-
-static int isLinkAckID(int linkIndex, uint32_t ID) {
-	SyncLayerCanLink *link = links[linkIndex];
-	return link->start_ack_ID == ID || link->data_count_reset_ack_ID == ID || link->data_ack_ID == ID || link->end_ack_ID == ID;
+	return link->start_ack_ID == ID || link->data_count_reset_ack_ID == ID || link->data_ack_ID == ID || link->end_ack_ID == ID || link->start_req_ID == ID || link->data_count_reset_req_ID == ID || link->end_req_ID == ID;
 }
 
 /*
@@ -519,7 +514,7 @@ static void sendThread(SyncLayerCanLink *link) {
 	}
 }
 
-static void recThread(SyncLayerCanLink *link, uint32_t id, uint8_t *bytes, uint16_t len, int isTx) {
+static void recThread(SyncLayerCanLink *link, uint32_t id, uint8_t *bytes, uint16_t len) {
 	SyncLayerCanData *data;
 	int index = getLinkIndex(link);
 	if (console(index < 0, CONSOLE_ERROR, __func__, "link index is negative : %d\n", index))
@@ -528,68 +523,65 @@ static void recThread(SyncLayerCanLink *link, uint32_t id, uint8_t *bytes, uint1
 	uint32_t data_id = id;
 
 	/* Transmitting */
-	if (isTx) {
-		uint8_t is_transmit = (link->start_ack_ID == id) || (link->data_ack_ID == id) || (link->data_count_reset_ack_ID == id) || (link->end_ack_ID == id);
-		if (is_transmit) {
-			if (is_in_que[index]) {
-				data_id = *(uint32_t*) bytes;
-				data = StaticQueue.peek(tx_que[index]);
-				if (console(data == NULL, CONSOLE_ERROR, __func__, "sync data doesn't exist in given tx map\n"))
-					return;
-			} else {
-				data_id = *(uint32_t*) bytes;
-				data = StaticHashMap.get(tx_map[index], data_id);
-				if (!validMemory(__func__, heaps[index], data))
-					return;
-				if (console(data == NULL, CONSOLE_ERROR, __func__, "sync data doesn't exist in given tx que\n"))
-					return;
-			}
-			StaticSyncLayerCan.txReceiveThread(link, data, id, bytes, len);
-			return;
-		}
-	} else {
-		/* Receiving */
-		uint8_t is_receive = (link->start_req_ID == id) || (link->data_count_reset_req_ID == id) || (link->end_req_ID == id);
-		if (is_receive) {
-			//Is protocol id
+	uint8_t is_transmit = (link->start_ack_ID == id) || (link->data_ack_ID == id) || (link->data_count_reset_ack_ID == id) || (link->end_ack_ID == id);
+	if (is_transmit) {
+		if (is_in_que[index]) {
 			data_id = *(uint32_t*) bytes;
-			data = StaticHashMap.get(rx_map[index], data_id);
-			if (data == NULL && link->start_req_ID == id) {
-				//Starting
-				data = allocateMemory(heaps[index], sizeof(SyncLayerCanData));
-				if (!validMemory(__func__, heaps[index], data))
-					return;
-				if (console(data == NULL, CONSOLE_ERROR, __func__, "Heap is full. Sync Data can't be created\n"))
-					return;
-				memory_leak_rx[index] += sizeof(SyncLayerCanData);
-				uint16_t size = *(uint16_t*) ((uint32_t*) bytes + 1);
-
-				data->id = data_id;
-				data->bytes = (uint8_t*) allocateMemory(heaps[index], size);
-				data->size = size;
-				data->track = SYNC_LAYER_CAN_START_REQUEST;
-				data->count = 0;
-				data->time_elapse = 0;
-				data->data_retry = 0;
-				data->dynamically_alocated = 1;
-
-				if (console(StaticHashMap.insert(rx_map[index], data->id, data) == NULL, CONSOLE_ERROR, __func__, "Heap is full. Sync data can't be put\n"))
-					return;
-			} else if (console(data == NULL, CONSOLE_ERROR, __func__, "Data doesn't exist in rx_map\n")) {
+			data = StaticQueue.peek(tx_que[index]);
+			if (console(data == NULL, CONSOLE_ERROR, __func__, "sync data doesn't exist in given tx map\n"))
 				return;
-			}
-			StaticSyncLayerCan.rxReceiveThread(links[index], data, id, bytes, len);
-			return;
+		} else {
+			data_id = *(uint32_t*) bytes;
+			data = StaticHashMap.get(tx_map[index], data_id);
+			if (!validMemory(__func__, heaps[index], data))
+				return;
+			if (console(data == NULL, CONSOLE_ERROR, __func__, "sync data doesn't exist in given tx que\n"))
+				return;
 		}
+		StaticSyncLayerCan.txReceiveThread(link, data, id, bytes, len);
+		return;
+	}
+
+	/* Receiving */
+	uint8_t is_receive = (link->start_req_ID == id) || (link->data_count_reset_req_ID == id) || (link->end_req_ID == id);
+	if (is_receive) {
+		//Is protocol id
+		data_id = *(uint32_t*) bytes;
 		data = StaticHashMap.get(rx_map[index], data_id);
-		if (!validMemory(__func__, heaps[index], data))
-			return;
-		if (console(data == NULL, CONSOLE_INFO, __func__, "Data doesn't exist in rx_map\n")) {
+		if (data == NULL && link->start_req_ID == id) {
+			//Starting
+			data = allocateMemory(heaps[index], sizeof(SyncLayerCanData));
+			if (!validMemory(__func__, heaps[index], data))
+				return;
+			if (console(data == NULL, CONSOLE_ERROR, __func__, "Heap is full. Sync Data can't be created\n"))
+				return;
+			memory_leak_rx[index] += sizeof(SyncLayerCanData);
+			uint16_t size = *(uint16_t*) ((uint32_t*) bytes + 1);
+
+			data->id = data_id;
+			data->bytes = (uint8_t*) allocateMemory(heaps[index], size);
+			data->size = size;
+			data->track = SYNC_LAYER_CAN_START_REQUEST;
+			data->count = 0;
+			data->time_elapse = 0;
+			data->data_retry = 0;
+			data->dynamically_alocated = 1;
+
+			if (console(StaticHashMap.insert(rx_map[index], data->id, data) == NULL, CONSOLE_ERROR, __func__, "Heap is full. Sync data can't be put\n"))
+				return;
+		} else if (console(data == NULL, CONSOLE_ERROR, __func__, "Data doesn't exist in rx_map\n")) {
 			return;
 		}
 		StaticSyncLayerCan.rxReceiveThread(links[index], data, id, bytes, len);
 		return;
 	}
+	data = StaticHashMap.get(rx_map[index], data_id);
+	if (!validMemory(__func__, heaps[index], data))
+		return;
+	if (console(data == NULL, CONSOLE_INFO, __func__, "Data doesn't exist in rx_map\n")) {
+		return;
+	}
+	StaticSyncLayerCan.rxReceiveThread(links[index], data, id, bytes, len);
 }
 
 /*
@@ -602,12 +594,9 @@ static void thread(SyncLayerCanLink *link) {
 		return;
 	sendThread(link);
 
-	CANData data = StaticCANQueue.dequeue(&canTxQueue[index]);
+	CANData data = StaticCANQueue.dequeue(&canRxQueue[index]);
 	if (data.ID != -1)
-		recThread(link, data.ID, data.byte, 8, 1);		//For transmit
-	data = StaticCANQueue.dequeue(&canRxQueue[index]);
-	if (data.ID != -1)
-		recThread(link, data.ID, data.byte, 8, 0);		//For receive
+		recThread(link, data.ID, data.byte, 8);
 }
 
 /*
@@ -619,17 +608,9 @@ static void recCAN(SyncLayerCanLink *link, uint32_t ID, uint8_t *bytes) {
 	if (console(index == -1, CONSOLE_ERROR, __func__, "0x%0x link is not found.\n"))
 		return;
 
-	//Transmit
-	if (isLinkAckID(index, ID)) {
-		StaticCANQueue.enqueue(&canTxQueue[index], ID, bytes);
-		return;
-	}
-
-	//Receive
-	if (isLinkRequestID(index, ID)) {
+	if (isLinkID(index, ID)) {
 		StaticCANQueue.enqueue(&canRxQueue[index], ID, bytes);
 	} else {
-//		printf("ID : 0x%x\n", ID);
 		if (!doesIDExistInMap(rx_map[index], ID))
 			return;
 		StaticCANQueue.enqueue(&canRxQueue[index], ID, bytes);
@@ -641,8 +622,8 @@ static int getAllocatedMemories() {
 }
 
 void printQueue() {
-	StaticCANQueue.print(&canTxQueue[0]);
-	StaticCANQueue.print(&canTxQueue[1]);
+//	StaticCANQueue.print(&canTxQueue[0]);
+//	StaticCANQueue.print(&canTxQueue[1]);
 	StaticCANQueue.print(&canRxQueue[0]);
 	StaticCANQueue.print(&canRxQueue[1]);
 }
