@@ -147,7 +147,7 @@ static void runRx() {
 	uint32_t tick = HAL_GetTick();
 	while (1) {
 		uint32_t tock = HAL_GetTick();
-		if ((tock - tick) >= 100) {
+		if ((tock - tick) >= 10) {
 			StaticCanProtocol.addTxMessagePtr(&link1, 0xA1, tx_bytes1,
 					sizeof(tx_bytes1));
 			StaticCanProtocol.addTxMessagePtr(&link1, 0xB1, tx_bytes2,

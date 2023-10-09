@@ -61,7 +61,7 @@ static void console(ConsoleStatus status, const char *func_name,
 	if (status == CONSOLE_INFO)
 		return;
 	if (status == CONSOLE_WARNING)
-			return;
+		return;
 	//TODO make naked and show all registers
 	if (status == CONSOLE_ERROR) {
 		RED;
@@ -246,6 +246,7 @@ static uint8_t pop(SyncLayerCanLink *link) {
 	return 1;
 }
 
+//Checks if the data exists in queue
 static int doesExist(Queue *queue, SyncLayerCanData *data) {
 	int que_size = queue->size;
 	struct QueueData *queData = queue->front;
@@ -277,13 +278,13 @@ static uint8_t addTxMessage(SyncLayerCanLink *link, uint32_t id, uint8_t *data,
 		return 0;
 	}
 
-	disableIRQ();//Disabling interrupt
+	disableIRQ(); //Disabling interrupt
 	SyncLayerCanData *sync_data = (SyncLayerCanData*) allocateMemory(
 			sizeof(SyncLayerCanData));
 	if (sync_data == NULL) {
 		console(CONSOLE_ERROR, __func__,
 				"Heap is full. Sync Data can't be created\n");
-		enableIRQ();//Enabling interrupt
+		enableIRQ(); //Enabling interrupt
 		return 0;
 	}
 	memory_leak_tx[link_index] += sizeof(SyncLayerCanData);
@@ -292,7 +293,7 @@ static uint8_t addTxMessage(SyncLayerCanLink *link, uint32_t id, uint8_t *data,
 	if (data_bytes == NULL) {
 		console(CONSOLE_ERROR, __func__,
 				"Heap is full. data_bytes can't be allocated\n");
-		enableIRQ();//Enabling interrupt
+		enableIRQ(); //Enabling interrupt
 		return 0;
 	}
 
@@ -315,7 +316,7 @@ static uint8_t addTxMessage(SyncLayerCanLink *link, uint32_t id, uint8_t *data,
 			if (StaticQueue.enqueue(tx_que[link_index], sync_data) == NULL) {
 				console(CONSOLE_ERROR, __func__,
 						"Heap is full. Sync data can't be put in que\n");
-				enableIRQ();//Enabling interrupt
+				enableIRQ(); //Enabling interrupt
 				return 0;
 			}
 		} else {
@@ -325,7 +326,7 @@ static uint8_t addTxMessage(SyncLayerCanLink *link, uint32_t id, uint8_t *data,
 			console(CONSOLE_INFO, __func__,
 					"Pointer of message with id 0x%0x is already exist updated\n",
 					id);
-			enableIRQ();//Enabling interrupt
+			enableIRQ(); //Enabling interrupt
 			return 0;
 		}
 	} else {
@@ -333,7 +334,7 @@ static uint8_t addTxMessage(SyncLayerCanLink *link, uint32_t id, uint8_t *data,
 			if (StaticHashMap.insert(tx_map[link_index], id, sync_data) == NULL) {
 				console(CONSOLE_ERROR, __func__,
 						"Heap is full. Sync data can't be put in map\n");
-				enableIRQ();//Enabling interrupt
+				enableIRQ(); //Enabling interrupt
 				return 0;
 			}
 		} else {
@@ -343,14 +344,14 @@ static uint8_t addTxMessage(SyncLayerCanLink *link, uint32_t id, uint8_t *data,
 			console(CONSOLE_INFO, __func__,
 					"Pointer of message with id 0x%0x is successfully updated\n",
 					id);
-			enableIRQ();//Enabling interrupt
+			enableIRQ(); //Enabling interrupt
 			return 0;
 		}
 	}
 
 	console(CONSOLE_INFO, __func__,
 			"Message with id 0x%0x is successfully added\n", id);
-	enableIRQ();//Enabling interrupt
+	enableIRQ(); //Enabling interrupt
 	return 1;
 }
 
@@ -370,13 +371,13 @@ static uint8_t addTxMessagePtr(SyncLayerCanLink *link, uint32_t id,
 		return 0;
 	}
 
-	disableIRQ();//Disabling interrupt
+	disableIRQ(); //Disabling interrupt
 	SyncLayerCanData *sync_data = (SyncLayerCanData*) allocateMemory(
 			sizeof(SyncLayerCanData));
 	if (sync_data == NULL) {
 		console(CONSOLE_ERROR, __func__,
 				"Heap is full. Sync Data can't be created\n");
-		enableIRQ();//Enabling interrupt
+		enableIRQ(); //Enabling interrupt
 		return 0;
 	}
 	memory_leak_tx[link_index] += sizeof(SyncLayerCanData);
@@ -395,7 +396,7 @@ static uint8_t addTxMessagePtr(SyncLayerCanLink *link, uint32_t id,
 			if (StaticQueue.enqueue(tx_que[link_index], sync_data) == NULL) {
 				console(CONSOLE_ERROR, __func__,
 						"Heap is full. Sync data can't be put in que\n");
-				enableIRQ();//Enabling interrupt
+				enableIRQ(); //Enabling interrupt
 				return 0;
 			}
 		} else {
@@ -404,7 +405,7 @@ static uint8_t addTxMessagePtr(SyncLayerCanLink *link, uint32_t id,
 			console(CONSOLE_INFO, __func__,
 					"Pointer of message with id 0x%0x is already exist updated\n",
 					id);
-			enableIRQ();//Enabling interrupt
+			enableIRQ(); //Enabling interrupt
 			return 0;
 		}
 	} else {
@@ -412,7 +413,7 @@ static uint8_t addTxMessagePtr(SyncLayerCanLink *link, uint32_t id,
 			if (StaticHashMap.insert(tx_map[link_index], id, sync_data) == NULL) {
 				console(CONSOLE_ERROR, __func__,
 						"Heap is full. Sync data can't be put in map\n");
-				enableIRQ();//Enabling interrupt
+				enableIRQ(); //Enabling interrupt
 				return 0;
 			}
 		} else {
@@ -421,13 +422,13 @@ static uint8_t addTxMessagePtr(SyncLayerCanLink *link, uint32_t id,
 			console(CONSOLE_INFO, __func__,
 					"Pointer of message with id 0x%0x is successfully updated\n",
 					id);
-			enableIRQ();//Enabling interrupt
+			enableIRQ(); //Enabling interrupt
 			return 0;
 		}
 	}
 	console(CONSOLE_INFO, __func__,
 			"Pointer of message with id 0x%0x is successfully added\n", id);
-	enableIRQ();//Enabling interrupt
+	enableIRQ(); //Enabling interrupt
 	return 1;
 }
 
@@ -447,13 +448,13 @@ static uint8_t addRxMessagePtr(SyncLayerCanLink *link, uint32_t id,
 		return 0;
 	}
 
-	disableIRQ();//Disabling interrupt
+	disableIRQ(); //Disabling interrupt
 	SyncLayerCanData *sync_data = (SyncLayerCanData*) allocateMemory(
 			sizeof(SyncLayerCanData));
 	if (sync_data == NULL) {
 		console(CONSOLE_ERROR, __func__,
 				"Heap is full. Sync Data can't be created\n");
-		enableIRQ();//Enabling interrupt
+		enableIRQ(); //Enabling interrupt
 		return 0;
 	}
 	memory_leak_rx[link_index] += sizeof(SyncLayerCanData);
@@ -471,7 +472,7 @@ static uint8_t addRxMessagePtr(SyncLayerCanLink *link, uint32_t id,
 		if (StaticHashMap.insert(rx_map[link_index], id, sync_data) == NULL) {
 			console(CONSOLE_ERROR, __func__,
 					"Heap is full. Sync data can't be put\n");
-			enableIRQ();//Enabling interrupt
+			enableIRQ(); //Enabling interrupt
 			return 0;
 		}
 	} else {
@@ -480,13 +481,13 @@ static uint8_t addRxMessagePtr(SyncLayerCanLink *link, uint32_t id,
 		console(CONSOLE_INFO, __func__,
 				"Pointer of message with id 0x%0x is successfully updated\n",
 				id);
-		enableIRQ();//Enabling interrupt
+		enableIRQ(); //Enabling interrupt
 		return 0;
 	}
 	console(CONSOLE_INFO, __func__,
 			"Pointer of message with id 0x%0x is successfully added as container\n",
 			id);
-	enableIRQ();//Enabling interrupt
+	enableIRQ(); //Enabling interrupt
 	return 1;
 }
 
