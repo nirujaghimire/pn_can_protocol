@@ -28,8 +28,7 @@ static CallbackFuncType txCallback[MAX_LINK];
 static CallbackFuncType rxCallback[MAX_LINK];
 
 static uint8_t link_size = 0;
-static CANQueue canTxQueue[MAX_LINK] = { 0 };
-static CANQueue canRxQueue[MAX_LINK] = { 0 };
+static CANQueue canQueue[MAX_LINK] = { 0 };
 static Queue *tx_que[MAX_LINK];
 static uint8_t is_in_que[MAX_LINK] = { 0 };
 static HashMap *tx_map[MAX_LINK];
@@ -182,8 +181,7 @@ static uint8_t addLink(BuddyHeap *heap, SyncLayerCanLink *link, uint8_t (*canSen
 		return 0;
 	if (console(link_size >= MAX_LINK, CONSOLE_ERROR, __func__, "Max size reached %d\n", MAX_LINK))
 		return 0;
-	canTxQueue[link_size] = StaticCANQueue.new();
-	canRxQueue[link_size] = StaticCANQueue.new();
+	canQueue[link_size] = StaticCANQueue.new();
 
 	if (is_que) {
 		tx_que[link_size] = StaticQueue.new(heap, NULL);
@@ -594,7 +592,7 @@ static void thread(SyncLayerCanLink *link) {
 		return;
 	sendThread(link);
 
-	CANData data = StaticCANQueue.dequeue(&canRxQueue[index]);
+	CANData data = StaticCANQueue.dequeue(&canQueue[index]);
 	if (data.ID != -1)
 		recThread(link, data.ID, data.byte, 8);
 }
@@ -609,11 +607,11 @@ static void recCAN(SyncLayerCanLink *link, uint32_t ID, uint8_t *bytes) {
 		return;
 
 	if (isLinkID(index, ID)) {
-		StaticCANQueue.enqueue(&canRxQueue[index], ID, bytes);
+		StaticCANQueue.enqueue(&canQueue[index], ID, bytes);
 	} else {
 		if (!doesIDExistInMap(rx_map[index], ID))
 			return;
-		StaticCANQueue.enqueue(&canRxQueue[index], ID, bytes);
+		StaticCANQueue.enqueue(&canQueue[index], ID, bytes);
 	}
 }
 
@@ -622,10 +620,8 @@ static int getAllocatedMemories() {
 }
 
 void printQueue() {
-//	StaticCANQueue.print(&canTxQueue[0]);
-//	StaticCANQueue.print(&canTxQueue[1]);
-	StaticCANQueue.print(&canRxQueue[0]);
-	StaticCANQueue.print(&canRxQueue[1]);
+	StaticCANQueue.print(&canQueue[0]);
+	StaticCANQueue.print(&canQueue[1]);
 }
 
 struct CanProtocolControl StaticCanProtocol = { .addLink = addLink, .pop = pop, .addTxMessage = addTxMessage, .addTxMessagePtr = addTxMessagePtr, .addRxMessagePtr = addRxMessagePtr, .thread = thread, .recCAN = recCAN, .getAllocatedMemories = getAllocatedMemories };
