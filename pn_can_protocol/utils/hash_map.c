@@ -4,7 +4,6 @@
 
 #include "hash_map.h"
 #include <stdint.h>
-#include <stdarg.h>
 #include "stdio.h"
 #include "stdlib.h"
 
@@ -14,65 +13,97 @@
 static int allocatedMemory = 0;
 
 typedef struct HashMapEntry Entry;
+
 /**
  * This converts key into hasKey
  * @param key   : Actual Key
  * @return      : Hash Key
  */
-static int hashFunc(int key) {
-    return key % MAP_SIZE;
+int hashFunc(int key) {
+	return key % MAP_SIZE;
 }
 
 /**
  * It allocates the memory and return pointer to it
+ * @param heap : Pointer of static heap (OR) null for heap use
  * @param sizeInByte    : Size in bytes
  * @return              : Pointer to allocated memory
  *                      : NULL if there exist no memory for allocation
  */
-static void *allocateMemory(int sizeInByte) {
-    if(sizeInByte<=0)
-        return NULL;
-    void* ptr = malloc(sizeInByte);
-    if(ptr!=NULL)
-        allocatedMemory+=sizeInByte;
-    return ptr;
+static void* allocateMemory(BuddyHeap *heap, int sizeInByte) {
+	void *ptr;
+	ptr = heap != NULL ? StaticBuddyHeap.malloc(heap, sizeInByte) : malloc(sizeInByte);
+	if (ptr != NULL)
+		allocatedMemory += sizeInByte;
+	return ptr;
 }
 
 /**
  * It free the allocated memory
+ * @param heap : Pointer of static heap (OR) null for heap use
  * @param pointer       : Pointer to allocated Memory
  * @param sizeInByte    : Size to be freed
  * @return              : 1 for success (OR) 0 for failed
  */
-static int freeMemory(void *pointer, int sizeInByte) {
-    if(pointer==NULL || sizeInByte<=0)
-        return 0;
-    free(pointer);
-    allocatedMemory-=sizeInByte;
-    return 1;
+static int freeMemory(BuddyHeap *heap, void *pointer, int sizeInByte) {
+	heap != NULL ? StaticBuddyHeap.free(heap, pointer) : free(pointer);
+	allocatedMemory -= sizeInByte;
+	return 1;
+}
+
+/**
+ * Check if memory pointer exist in defined memory
+ */
+static int validMemory(const char *func, BuddyHeap *heap, void *ptr) {
+	if (ptr == NULL)
+		return 1;
+	uint32_t addr = (uint32_t) ptr;
+	if (heap == NULL) {
+		if (addr < 0x20000000 || addr > 0x20004fff) {
+			printf("HashMap-%s:\n", func);
+			printf("Memory : 0x20000000 - 0x20004fff\n");
+			printf("Ptr : %p\n\n", ptr);
+//			*(uint8_t*)NULL = 10;
+			return 0;
+		}
+	} else {
+		if (!StaticBuddyHeap.isValidPointer(*heap, ptr)) {
+			printf("HashMap-%s:\n", func);
+			printf("Heap : %p\n", heap);
+			printf("Memory : %p - %p\n", heap->memory, heap->memory + heap->maxSize);
+			printf("Ptr : %p\n\n", ptr);
+//			*(uint8_t*) NULL = 10;
+			return 0;
+		}
+
+	}
+	return 1;
 }
 
 /**
  * Computation Cost : O(1)\n
  * It allocates the memory for HashMap and return allocated HashMap
+ * @param heap : Pointer of static heap (OR) null for heap use
  * @return : Allocated HashMap (!!! Must be free using free) (OR) NULL if heap is full
  */
-static HashMap *new() {
-    //Allocate memory for hash map
-    HashMap *map = allocateMemory(sizeof(HashMap));
+static HashMap* new(BuddyHeap *heap) {
+	//Allocate memory for hash map
+	HashMap *map = allocateMemory(heap, sizeof(HashMap));
+	if (!validMemory(__func__, heap, map))
+		return NULL;
+	//Heap is full
+	if (map == NULL)
+		return NULL;
+	map->heap = heap;
 
-    //Heap is full
-    if (map == NULL)
-        return NULL;
+	//Filling all entries with NULL
+	for (int i = 0; i < MAP_SIZE; ++i)
+		map->entries[i] = NULL;
 
-    //Filling all entries with NULL
-    for (int i = 0; i < MAP_SIZE; ++i)
-        map->entries[i] = NULL;
+	//Make initial size zero
+	map->size = 0;
 
-    //Make initial size zero
-    map->size = 0;
-
-    return map;
+	return map;
 }
 
 /**
@@ -80,22 +111,22 @@ static HashMap *new() {
  * @param map  : Hash map
  */
 static void print(HashMap *map) {
-    if (map == NULL) {
-        printf("map is NULL!!!\n");
-        return;
-    }
+	if (map == NULL) {
+		printf("map is NULL!!!\n");
+		return;
+	}
 
-    for (int i = 0; i < MAP_SIZE; ++i) {
-        printf("%4d: ", i);
-        Entry *entry = map->entries[i];
-        for (int j = 0; j < MAX_LOOP; ++j) {
-            if (entry == NULL)
-                break;
-            printf("%d >> ", entry->key);
-            entry = entry->nextEntry;
-        }
-        printf("\n");
-    }
+	for (int i = 0; i < MAP_SIZE; ++i) {
+		printf("%4d: ", i);
+		Entry *entry = map->entries[i];
+		for (int j = 0; j < MAX_LOOP; ++j) {
+			if (entry == NULL)
+				break;
+			printf("%d >> ", entry->key);
+			entry = entry->nextEntry;
+		}
+		printf("\n");
+	}
 }
 
 /**
@@ -106,66 +137,73 @@ static void print(HashMap *map) {
  * @param value : Value to be inserted of type HashMapType
  * @return      : Same map (OR) NULL if heap is full or map is null
  */
-static HashMap *insert(HashMap *map, int key, HashMapType value) {
-    //If map is NULL then return NULL
-    if (map == NULL)
-        return NULL;
+static HashMap* insert(HashMap *map, int key, HashMapType value) {
 
-    //Allocate Memory for @Entry
-    Entry *newEntry = allocateMemory(sizeof(Entry));
+	//If map is NULL then return NULL
+	if (!validMemory(__func__, map->heap, map))
+		return NULL;
+	if (map == NULL)
+		return NULL;
 
-    //If heap is full then return NULL
-    if (newEntry == NULL)
-        return NULL;
+	//Allocate Memory for @Entry
+	Entry *newEntry = allocateMemory(map->heap, sizeof(Entry));
+	if (!validMemory(__func__, map->heap, newEntry))
+		return NULL;
 
-    //Fill the data in entry
-    newEntry->key = key;
-    newEntry->value = value;
-    newEntry->nextEntry = NULL;//make next entry is empty
+	//If heap is full then return NULL
+	if (newEntry == NULL)
+		return NULL;
 
-    //Calculate hashKey
-    int hashKey = hashFunc(key);
+	//Fill the data in entry
+	newEntry->key = key;
+	newEntry->value = value;
+	newEntry->nextEntry = NULL; //make next entry is empty
 
-    //Get the top of entry of corresponding hashmap
-    Entry *entry = map->entries[hashKey];
+	//Calculate hashKey
+	int hashKey = hashFunc(key);
 
-    if (entry == NULL) {
-        //If top entry is empty fill the entry
-        map->entries[hashKey] = newEntry;
-    } else {
-        int l = 0;
-        for (; l < MAX_LOOP; ++l) {
-            //Check if key already exist
-            if (entry->key == key) {
-                //Only update value
-                entry->value = value;
+	//Get the top of entry of corresponding hashmap
+	Entry *entry = map->entries[hashKey];
+	if (entry == NULL) {
+		//If top entry is empty fill the entry
+		map->entries[hashKey] = newEntry;
+	} else {
+		int l = 0;
+		for (; l < MAX_LOOP; ++l) {
+			//Check if key already exist
+			if (entry->key == key) {
+				//Only update value
+				entry->value = value;
 
-                //Free allocated memory for @newEntry
-                freeMemory(newEntry, sizeof(Entry));
-                return map;
-            }
+				//Free allocated memory for @newEntry
+				freeMemory(map->heap, newEntry, sizeof(Entry));
 
-            //If next entry is empty(@NULL) break
-            if (entry->nextEntry == NULL) {
-                entry->nextEntry = newEntry;
-                break;
-            }
-            //If this entry is not empty select next entry
-            entry = entry->nextEntry;
-        }
+				return map;
+			}
 
-        //If @MAX_LOOP exceeds then entry is not inserted
-        if (l >= MAX_LOOP) {
-            //Free allocated memory for @newEntry
-            freeMemory(newEntry, sizeof(Entry));
-            return NULL;
-        }
-    }
-    //If entry is inserted then increase the size
-    map->size++;
+			//If next entry is empty(@NULL) break
+			if (!validMemory(__func__, map->heap, entry))
+				break;
+			if (entry->nextEntry == NULL) {
+				entry->nextEntry = newEntry;
+				break;
+			}
+			//If this entry is not empty select next entry
+			entry = entry->nextEntry;
+		}
 
-    //Return same @map
-    return map;
+		//If @MAX_LOOP exceeds then entry is not inserted
+		if (l >= MAX_LOOP) {
+			//Free allocated memory for @newEntry
+			freeMemory(map->heap, newEntry, sizeof(Entry));
+			return NULL;
+		}
+	}
+	//If entry is inserted then increase the size
+	map->size++;
+
+	//Return same @map
+	return map;
 }
 
 /**
@@ -176,30 +214,34 @@ static HashMap *insert(HashMap *map, int key, HashMapType value) {
  * @return      : Value corresponding to the key (OR) NULL if key doesn't exist found
  */
 static HashMapType get(HashMap *map, int key) {
-    //If map is NULL return NULL
-    if (map == NULL)
-        return HASH_MAP_NULL;
+	//If map is NULL return NULL
+	if (!validMemory(__func__, map->heap, map))
+		return HASH_MAP_NULL;
+	if (map == NULL)
+		return HASH_MAP_NULL;
 
-    //Calculate hashKey
-    int hashKey = hashFunc(key);
+	//Calculate hashKey
+	int hashKey = hashFunc(key);
 
-    //Get the top of entry for corresponding hashmap
-    Entry *entry = map->entries[hashKey];
-    for (int l = 0; l < MAX_LOOP; ++l) {
-        //If this entry is empty value doesn't exist in map so return NULL
-        if (entry == NULL)
-            return HASH_MAP_NULL;
+	//Get the top of entry for corresponding hashmap
+	Entry *entry = map->entries[hashKey];
+	for (int l = 0; l < MAX_LOOP; ++l) {
+		//If this entry is empty value doesn't exist in map so return NULL
+		if (!validMemory(__func__, map->heap, entry))
+			break;
+		if (entry == NULL)
+			return HASH_MAP_NULL;
 
-        //If key is found return value
-        if (entry->key == key)
-            return entry->value;
+		//If key is found return value
+		if (entry->key == key)
+			return entry->value;
 
-        //If key is not found then go to next entry
-        entry = entry->nextEntry;
-    }
+		//If key is not found then go to next entry
+		entry = entry->nextEntry;
+	}
 
-    //If loop exceeds the limit and no key is found then return NULL
-    return HASH_MAP_NULL;
+	//If loop exceeds the limit and no key is found then return NULL
+	return HASH_MAP_NULL;
 }
 
 /**
@@ -209,50 +251,53 @@ static HashMapType get(HashMap *map, int key) {
  * @param key   : Key for value
  * @return      : Same map (OR) NULL if key is not found or map is NULL
  */
-static HashMap *delete(HashMap *map, int key) {
-    //If map is NULL return NULL
-    if (map == NULL)
-        return NULL;
+static HashMap* delete(HashMap *map, int key) {
+	//If map is NULL return NULL
+	if (!validMemory(__func__, map->heap, map))
+		return NULL;
+	if (map == NULL)
+		return NULL;
 
-    //Calculate hashKey
-    int hashKey = hashFunc(key);
+	//Calculate hashKey
+	int hashKey = hashFunc(key);
 
-    //Get the top of entry of corresponding hashmap
-    Entry *entry = map->entries[hashKey];
-    //Initially previous entry is NULL
-    Entry *prevEntry = NULL;
-    for (int l = 0; l < MAX_LOOP; ++l) {
-        //If entry is empty key doesn't exist
-        if (entry == NULL)
-            break;
+	//Get the top of entry of corresponding hashmap
+	Entry *entry = map->entries[hashKey];
+	//Initially previous entry is NULL
+	Entry *prevEntry = NULL;
+	for (int l = 0; l < MAX_LOOP; ++l) {
+		//If entry is empty key doesn't exist
+		if (!validMemory(__func__, map->heap, entry))
+			break;
+		if (entry == NULL)
+			break;
 
-        //Key found
-        if (entry->key == key) {
-            //Copy next entry
-            Entry *nextEntry = entry->nextEntry;
+		//Key found
+		if (entry->key == key) {
+			//Copy next entry
+			Entry *nextEntry = entry->nextEntry;
+			if (prevEntry == NULL)
+				// If prevEntry is NULL then this entry is top entry
+				map->entries[hashKey] = nextEntry;
+			else
+				// If prevEntry is not NULL then this entry is branch entry
+				prevEntry->nextEntry = nextEntry;
 
-            if (prevEntry == NULL)
-                // If prevEntry is NULL then this entry is top entry
-                map->entries[hashKey] = nextEntry;
-            else
-                // If prevEntry is not NULL then this entry is branch entry
-                prevEntry->nextEntry = nextEntry;
+			//Deallocate memory for this entry
+			freeMemory(map->heap, entry, sizeof(Entry));
 
-            //Deallocate memory for this entry
-            freeMemory(entry, sizeof(Entry));
+			//Decrease the size
+			map->size--;
+			return map;
+		}
 
-            //Decrease the size
-            map->size--;
-            return map;
-        }
+		//Go to next entry if key is not found
+		prevEntry = entry;
+		entry = entry->nextEntry;
+	}
 
-        //Go to next entry if key is not found
-        prevEntry = entry;
-        entry = entry->nextEntry;
-    }
-
-    //If key is not found return NULL
-    return NULL;
+	//If key is not found return NULL
+	return NULL;
 }
 
 /**
@@ -260,30 +305,42 @@ static HashMap *delete(HashMap *map, int key) {
  * It gives all the keys in the map
  * @param map   : HashMap
  * @param keys  : Array of integer of size equal to size of map
+ * @param len	: stores actual length of keys
  * @return      : same map (OR) NULL if map is NULL
  */
-static HashMap *getKeys(HashMap *map, int keys[]) {
-    //If map is NULL return NULL
-    if (map == NULL)
-        return NULL;
+static HashMap* getKeys(HashMap *map, int keys[], int *len) {
+	//If map is NULL return NULL
+	if (!validMemory(__func__, map->heap, map)) {
+		printf("MAP\n");
+		return NULL;
+	}
+	if (map == NULL)
+		return NULL;
 
-    int keyIndex = 0;
-    for (int entryIndex = 0; entryIndex < MAP_SIZE; ++entryIndex) {
-        //Get top entry
-        Entry *entry = map->entries[entryIndex];
+	int keyIndex = 0;
+	for (int entryIndex = 0; entryIndex < MAP_SIZE; ++entryIndex) {
+		//Get top entry
 
-        for (int l = 0; l < MAX_LOOP; ++l) {
-            //If entry is empty then break loop
-            if (entry == NULL)
-                break;
+		Entry *entry = map->entries[entryIndex];
+		for (int l = 0; l < MAX_LOOP; ++l) {
+			//If entry is empty then break loop
+			if (!validMemory(__func__, map->heap, entry))
+				break;
+			if (entry == NULL)
+				break;
 
-            //If entry is not empty
-            keys[keyIndex++] = entry->key;// Copy key and increase keyIndex
-            entry = entry->nextEntry;//Go to next entry
-        }
-    }
+			//If entry is not empty
+//			if (!validMemory(map->heap, &keys[keyIndex]))
+//				break;
 
-    return map;
+			keys[keyIndex++] = entry->key; // Copy key and increase keyIndex
+			entry = entry->nextEntry; //Go to next entry
+		}
+	}
+
+	*len = keyIndex;
+
+	return map;
 }
 
 /**
@@ -294,30 +351,36 @@ static HashMap *getKeys(HashMap *map, int keys[]) {
  * @return      : 1 if key exist (OR) 0 if key doesn't exist
  */
 static int isKeyExist(HashMap *map, int key) {
-    //If map is NULL return false
-    if (map == NULL)
-        return 0;
+	//If map is NULL return false
+	if (map == NULL)
+		return 0;
 
-    //Calculate hashKey
-    int hashKey = hashFunc(key);
+	//If map is NULL then return NULL
+	if (map == NULL)
+		return 0;
 
-    //Get the top of entry for corresponding hashmap
-    Entry *entry = map->entries[hashKey];
-    for (int l = 0; l < MAX_LOOP; ++l) {
-        //If this entry is empty key doesn't exist in map
-        if (entry == NULL)
-            return 0;
+	//Calculate hashKey
+	int hashKey = hashFunc(key);
 
-        //If key is found return true
-        if (entry->key == key)
-            return 1;
+	//Get the top of entry for corresponding hashmap
+	Entry *entry = map->entries[hashKey];
+	for (int l = 0; l < MAX_LOOP; ++l) {
+		//If this entry is empty key doesn't exist in map
+		if (!validMemory(__func__, map->heap, entry))
+			break;
+		if (entry == NULL)
+			break;
 
-        //If key is not found then go to next entry
-        entry = entry->nextEntry;
-    }
+		//If key is found return true
+		if (entry->key == key)
+			return 1;
 
-    //If loop exceeds the limit and no key is found then return false
-    return 0;
+		//If key is not found then go to next entry
+		entry = entry->nextEntry;
+	}
+
+	//If loop exceeds the limit and no key is found then return false
+	return 0;
 }
 
 /**
@@ -327,64 +390,54 @@ static int isKeyExist(HashMap *map, int key) {
  * @return      : 1 for success (OR) 0 for failed
  */
 static int freeMap(HashMap **mapPtr) {
-    HashMap *map = *mapPtr;
-    //If map is NULL
-    if (map == NULL)
-        return 0;
+	HashMap *map = *mapPtr;
+	//If map is NULL
+	if (map == NULL)
+		return 0;
 
-    int size = map->size;
-    //If map is empty
-    if (size == 0) {
-        //Free hash map memory
-        freeMemory(map, sizeof(HashMap));
-        *mapPtr=NULL;
-        return 1;
-    }
+	int size = map->size;
+	//If map is empty
+	if (size == 0) {
+		//Free hash map memory
+		freeMemory(map->heap, map, sizeof(HashMap));
+		*mapPtr = NULL;
+		return 1;
+	}
 
-    //Delete all entries
-    for (int entryIndex = 0; entryIndex < MAP_SIZE; ++entryIndex) {
-        for (int l = 0; l < MAX_LOOP; ++l) {
-            //If entry is empty then break loop
-            if (map->entries[entryIndex] == NULL)
-                break;
+	//Delete all entries
+	for (int entryIndex = 0; entryIndex < MAP_SIZE; ++entryIndex) {
+		for (int l = 0; l < MAX_LOOP; ++l) {
+			//If entry is empty then break loop
+			if (map->entries[entryIndex] == NULL)
+				break;
 
-            //If entry is not empty
-            Entry* entry = map->entries[entryIndex];
+			//If entry is not empty
+			Entry *entry = map->entries[entryIndex];
 
-            // If prevEntry is NULL then this entry is top entry
-            map->entries[entryIndex] = entry->nextEntry;
+			// If prevEntry is NULL then this entry is top entry
+			map->entries[entryIndex] = entry->nextEntry;
 
-            //Deallocate memory for this entry
-            freeMemory(entry, sizeof(Entry));
+			//Deallocate memory for this entry
+			freeMemory(map->heap, entry, sizeof(Entry));
 
-            map->size--;
-        }
-    }
+			map->size--;
+		}
+	}
 
-    //Free memory for hash map
-    freeMemory(map, sizeof(HashMap));
+	//Free memory for hash map
+	freeMemory(map->heap, map, sizeof(HashMap));
 
-    *mapPtr=NULL;
+	*mapPtr = NULL;
 
-    return 1; //freeing memory success
+	return 1; //freeing memory success
 }
 
 /**
  * This return allocated memory for hash map till now
  * @return  : Allocated memories
  */
-static int getAllocatedMemories(){
-    return allocatedMemory;
+static int getAllocatedMemories() {
+	return allocatedMemory;
 }
 
-struct HashMapControl StaticHashMap = {
-        .new=new,
-        .insert=insert,
-        .get=get,
-        .delete=delete,
-        .getKeys=getKeys,
-        .isKeyExist=isKeyExist,
-        .free=freeMap,
-        .print=print,
-        .getAllocatedMemories = getAllocatedMemories
-};
+struct HashMapControl StaticHashMap = { .new = new, .insert = insert, .get = get, .delete = delete, .getKeys = getKeys, .isKeyExist = isKeyExist, .free = freeMap, .print = print, .getAllocatedMemories = getAllocatedMemories };
