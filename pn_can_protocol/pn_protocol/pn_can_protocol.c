@@ -251,6 +251,30 @@ static int doesExist(Queue *queue, SyncLayerCanData *data) {
 	return 0;
 }
 
+static int doesIDExistInQueue(Queue *queue, uint32_t ID) {
+	int que_size = queue->size;
+	struct QueueData *queData = queue->front;
+	SyncLayerCanData *syncData;
+	for (int i = 0; i < que_size; i++) {
+		syncData = (SyncLayerCanData*) queData->value;
+		if (syncData->id == ID)
+			return 1;
+		queData = queData->next;
+		if (queData == NULL)
+			break;
+	}
+	return 0;
+}
+
+static int doesIDExistInMap(HashMap *map, uint32_t ID) {
+	return StaticHashMap.isKeyExist(map, ID);
+}
+
+static int doesIDExistInLink(int linkIndex, uint32_t ID) {
+	SyncLayerCanLink *link = links[linkIndex];
+	return link->start_ack_ID == ID || link->data_count_reset_ack_ID == ID || link->data_ack_ID == ID || link->end_ack_ID == ID;
+}
+
 /*
  * This will add the data to be transmitted in link
  * @param link		: Link where data is to be transmitted
@@ -582,6 +606,17 @@ static void recCAN(SyncLayerCanLink *link, uint32_t ID, uint8_t *bytes) {
 	int index = getLinkIndex(link);
 	if (console(index == -1, CONSOLE_ERROR, __func__, "0x%0x link is not found.\n"))
 		return;
+
+	if (!doesIDExistInLink(index, ID)) {
+		if (is_in_que[index]) {
+			if (!doesIDExistInQueue(tx_que[index], ID))
+				return;
+		} else {
+			if (!doesIDExistInMap(tx_map[index], ID))
+				return;
+		}
+	}
+
 	StaticCANQueue.enqueue(&canQueue[index], ID, bytes);
 }
 
@@ -591,6 +626,7 @@ static int getAllocatedMemories() {
 
 void printQueue() {
 	StaticCANQueue.print(&canQueue[0]);
+	StaticCANQueue.print(&canQueue[1]);
 }
 
 struct CanProtocolControl StaticCanProtocol = { .addLink = addLink, .pop = pop, .addTxMessage = addTxMessage, .addTxMessagePtr = addTxMessagePtr, .addRxMessagePtr = addRxMessagePtr, .thread = thread, .recCAN = recCAN, .getAllocatedMemories = getAllocatedMemories };
