@@ -17,7 +17,7 @@
 
 #define MAX_MEMORY 1024*15
 
-#define MAX_LINK 2
+#define MAX_LINK 3
 
 typedef uint8_t (*CanSendFuncType)(uint32_t id, uint8_t *bytes, uint8_t len);
 typedef uint8_t (*CallbackFuncType)(uint32_t id, uint8_t *bytes, uint16_t size, uint8_t status);
@@ -594,24 +594,27 @@ static void thread(SyncLayerCanLink *link) {
 
 	CANData data = StaticCANQueue.dequeue(&canQueue[index]);
 	if (data.ID != -1)
-		recThread(link, data.ID, data.byte, 8);
+		recThread(link, data.ID, data.byte, data.len);
 }
 
 /*
- * This should be called after CAN data is received from CAN
+ * This should be called after data is received from CAN
  * @param link	: Link where data is to be transmitted or received
+ * @param id	: CAN ID
+ * @param bytes	: data of bytes
+ * @param size	: size of of bytes
  */
-static void recCAN(SyncLayerCanLink *link, uint32_t ID, uint8_t *bytes) {
+static void recCAN(SyncLayerCanLink *link, uint32_t ID, uint8_t *bytes,uint8_t size) {
 	int index = getLinkIndex(link);
 	if (console(index == -1, CONSOLE_ERROR, __func__, "0x%0x link is not found.\n"))
 		return;
 
 	if (isLinkID(index, ID)) {
-		StaticCANQueue.enqueue(&canQueue[index], ID, bytes);
+		StaticCANQueue.enqueue(&canQueue[index], ID, bytes,size);
 	} else {
 		if (!doesIDExistInMap(rx_map[index], ID))
 			return;
-		StaticCANQueue.enqueue(&canQueue[index], ID, bytes);
+		StaticCANQueue.enqueue(&canQueue[index], ID, bytes,size);
 	}
 }
 
