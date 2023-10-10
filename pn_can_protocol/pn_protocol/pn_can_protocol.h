@@ -70,9 +70,10 @@ struct CanProtocolControl {
 	 * This should be called after data is received from CAN
 	 * @param link	: Link where data is to be transmitted or received
 	 * @param id	: CAN ID
-	 * @param bytes	: data of 8 bytes
+	 * @param bytes	: data of bytes
+	 * @param size	: size of of bytes
 	 */
-	void (*recCAN)(SyncLayerCanLink *link, uint32_t id, uint8_t *bytes);
+	void (*recCAN)(SyncLayerCanLink *link, uint32_t id, uint8_t *bytes,uint8_t size);
 
 	/**
 	 * This return allocated memory for hash map till now
