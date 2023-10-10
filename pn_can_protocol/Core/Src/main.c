@@ -103,7 +103,7 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 #include "pn_can_protocol.h"
-	StaticCanProtocolTest.runRx();
+	StaticCanProtocolTest.runTx();
 //	StaticSyncLayerCanTest.runTx();
 	while (1) {
     /* USER CODE END WHILE */
