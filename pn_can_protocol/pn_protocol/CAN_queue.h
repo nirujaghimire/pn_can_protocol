@@ -12,6 +12,7 @@
 typedef struct {
 	uint32_t ID;
 	uint8_t byte[8];
+	uint8_t len;
 } CANData;
 extern CANData CAN_DATA_NULL;
 
@@ -24,7 +25,7 @@ typedef struct {
 
 struct CANQueueControl {
 	CANQueue (*new)();
-	int (*enqueue)(CANQueue *queue, uint32_t ID, uint8_t *bytes);
+	int (*enqueue)(CANQueue *queue, uint32_t ID, uint8_t *bytes,uint8_t len);
 	CANData (*peek)(CANQueue *queue);
 	CANData (*dequeue)(CANQueue *queue);
 	void (*print)(CANQueue *queue);
