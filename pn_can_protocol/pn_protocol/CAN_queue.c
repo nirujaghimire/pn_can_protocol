@@ -20,11 +20,11 @@ static Queue new() {
 	return queue;
 }
 
-static int enqueue(Queue *queue, uint32_t ID, uint8_t *bytes) {
+static int enqueue(Queue *queue, uint32_t ID, uint8_t *bytes,uint8_t size) {
 	if (queue->size >= CAN_DATA_MAX_SIZE)
 		return 0;
 
-	Value value = { .ID = ID };
+	Value value = { .ID = ID ,.len=size};
 	*(uint64_t*) value.byte = *(uint64_t*) bytes;
 
 	queue->value[queue->back] = value;

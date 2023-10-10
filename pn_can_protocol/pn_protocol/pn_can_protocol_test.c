@@ -51,8 +51,8 @@ static void canRxInterrupt() {
 //	for (int i = 0; i < rx_header.DLC; ++i)
 //		printf("%d ", bytes[i]);
 //	printf("\n");
-	StaticCanProtocol.recCAN(&link1, rx_header.ExtId, bytes);
-	StaticCanProtocol.recCAN(&link2, rx_header.ExtId, bytes);
+	StaticCanProtocol.recCAN(&link1, rx_header.ExtId, bytes,rx_header.DLC);
+	StaticCanProtocol.recCAN(&link2, rx_header.ExtId, bytes,rx_header.DLC);
 
 }
 
