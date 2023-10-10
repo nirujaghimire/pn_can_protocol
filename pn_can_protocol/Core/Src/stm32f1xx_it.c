@@ -76,16 +76,11 @@ void NMI_Handler(void) {
 	/* USER CODE END NonMaskableInt_IRQn 1 */
 }
 
-#include "static_heap.h"
 /**
  * @brief This function handles Hard fault interrupt.
  */
 void HardFault_Handler(void) {
 	/* USER CODE BEGIN HardFault_IRQn 0 */
-	extern Heap heap;
-	extern void printQueue();
-	StaticHeap.printMemoryMap(heap);
-	printQueue();
 	uint32_t *pSP;
 	__asm volatile("MRS R0, MSP");
 	__asm volatile("MOV %0,R0":"=r"(pSP));

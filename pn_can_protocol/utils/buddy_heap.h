@@ -1,5 +1,5 @@
 //
-// Created by niruja on 10/8/2023.
+// Created by peter on 10/8/2023.
 //
 
 #ifndef STATIC_HEAP_MEMORY_BUDDY_HEAP_H

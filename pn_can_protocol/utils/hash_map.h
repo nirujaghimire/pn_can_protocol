@@ -21,7 +21,6 @@ struct HashMap {
 	int size;
 	struct HashMapEntry *entries[HASH_MAP_SIZE];
 	BuddyHeap *heap;
-
 };
 typedef struct HashMap HashMap;
 
@@ -29,7 +28,6 @@ struct HashMapControl {
 	/**
 	 * Computation Cost : O(1)\n
 	 * It allocates the memory for HashMap and return allocated HashMap
-	 * @param heap : Pointer of static heap (OR) null for heap use
 	 * @return : Allocated HashMap (!!! Must be free using free ) (OR) NULL if heap is full
 	 */
 	HashMap* (*new)(BuddyHeap *heap);
@@ -37,12 +35,15 @@ struct HashMapControl {
 	/**
 	 * Computation Cost : O(1)\n
 	 * It inserts the value in map
+	 * @param heap  : Pointer to static heap
+	 *              : NULL for dynamic heap
 	 * @param map   : HashMap
 	 * @param key   : Key for value
 	 * @param value : Value to be inserted of type HashMapType
 	 * @return      : Same map (OR) NULL if heap is full or map is null
 	 */
-	HashMap* (*insert)(const HashMap *map, int key, HashMapType value);
+	HashMap* (*insert)(HashMap *map, int key, HashMapType value);
+
 	/**
 	 * Computation Cost : O(1)\n
 	 * It searches the value corresponding to the key and return value
@@ -50,7 +51,7 @@ struct HashMapControl {
 	 * @param key   : Key for value
 	 * @return      : Value corresponding to free the key (OR) NULL if key doesn't exist found
 	 */
-	HashMapType(*get)(const HashMap *map, int key);
+	HashMapType(*get)(HashMap *map, int key);
 
 	/**
 	 * Computation Cost : O(1)\n
@@ -59,7 +60,7 @@ struct HashMapControl {
 	 * @param key   : Key for value
 	 * @return      : Same map (OR) NULL if key is not found or map is NULL
 	 */
-	HashMap* (*delete)(const HashMap *map, int key);
+	HashMap* (*delete)(HashMap *map, int key);
 
 	/**
 	 * Computation Cost : O(n)\n
