@@ -47,10 +47,10 @@ static CAN_RxHeaderTypeDef rx_header;
 static uint8_t bytes[8];
 static void canRxInterrupt() {
 	HAL_CAN_GetRxMessage(&hcan, CAN_RX_FIFO0, &rx_header, bytes);
-//	printf("Interrupt-> 0x%02x : ", (unsigned int) rx_header.ExtId);
-//	for (int i = 0; i < rx_header.DLC; ++i)
-//		printf("%d ", bytes[i]);
-//	printf("\n");
+	printf("Interrupt-> 0x%02x : ", (unsigned int) rx_header.ExtId);
+	for (int i = 0; i < rx_header.DLC; ++i)
+		printf("%d ", bytes[i]);
+	printf("\n");
 	StaticCanProtocol.recCAN(&link1, rx_header.ExtId, bytes,rx_header.DLC);
 	StaticCanProtocol.recCAN(&link2, rx_header.ExtId, bytes,rx_header.DLC);
 
@@ -66,10 +66,10 @@ static uint8_t canSend(uint32_t id, uint8_t *bytes, uint8_t len) {
 	tx_header.RTR = CAN_RTR_DATA;
 	tx_header.TransmitGlobalTime = DISABLE;
 
-//	printf("canSend-> 0x%02x : ", (unsigned int) id);
-//	for (int i = 0; i < len; ++i)
-//		printf("%d ", bytes[i]);
-//	printf("\n");
+	printf("canSend-> 0x%02x : ", (unsigned int) id);
+	for (int i = 0; i < len; ++i)
+		printf("%d ", bytes[i]);
+	printf("\n");
 
 	return HAL_CAN_AddTxMessage(&hcan, &tx_header, bytes, &tx_mailbox) == HAL_OK;
 }
@@ -98,6 +98,8 @@ static uint8_t rxCallback1(uint32_t id, uint8_t *bytes, uint16_t size, uint8_t s
 	for (int i = 0; i < size; i++)
 		printf("%d ", bytes[i]);
 	printf("\n");
+
+//	StaticCanProtocol.addTxMessage(&link1,id+10,bytes,size);
 
 	return 1;
 }
@@ -158,25 +160,26 @@ static void runRx() {
 	uint32_t tick = HAL_GetTick();
 	uint32_t prev_milis = HAL_GetTick();
 	while (1) {
-		uint32_t current_milis = HAL_GetTick();
-		if ((current_milis - prev_milis) > 1000) {
-			printf("###################################################################\n");
-			printf("Memory : %p - %p\n", heap.memory, heap.memory + heap.maxSize);
-//			StaticBuddyHeap.printMap(heap);
-			prev_milis = HAL_GetTick();
-			printQueue();
-		}
-		uint32_t tock = HAL_GetTick();
+//		uint32_t current_milis = HAL_GetTick();
+//		if ((current_milis - prev_milis) > 1000) {
+//			printf("###################################################################\n");
+//			printf("Memory : %p - %p\n", heap.memory, heap.memory + heap.maxSize);
+////			StaticBuddyHeap.printMap(heap);
+//			prev_milis = HAL_GetTick();
+//			printQueue();
+//		}
+//		uint32_t tock = HAL_GetTick();
 //		if ((tock - tick) >= 100) {
-		StaticCanProtocol.addTxMessagePtr(&link1, 0xA1, tx_bytes1, sizeof(tx_bytes1));
-		StaticCanProtocol.addTxMessagePtr(&link1, 0xB1, tx_bytes2, sizeof(tx_bytes2));
-		StaticCanProtocol.addTxMessagePtr(&link1, 0xC1, tx_bytes3, sizeof(tx_bytes3));
-		StaticCanProtocol.addTxMessagePtr(&link2, 0xD1, tx_bytes4, sizeof(tx_bytes4));
-		StaticCanProtocol.addTxMessagePtr(&link2, 0xE1, tx_bytes3, sizeof(tx_bytes3));
-		tick = tock;
-//		};
+//		StaticCanProtocol.addTxMessagePtr(&link1, 0xA1, tx_bytes1, sizeof(tx_bytes1));
+//		StaticCanProtocol.addTxMessagePtr(&link1, 0xB1, tx_bytes2, sizeof(tx_bytes2));
+//		StaticCanProtocol.addTxMessagePtr(&link1, 0xC1, tx_bytes3, sizeof(tx_bytes3));
+//		StaticCanProtocol.addTxMessagePtr(&link2, 0xD1, tx_bytes4, sizeof(tx_bytes4));
+//		StaticCanProtocol.addTxMessagePtr(&link2, 0xE1, tx_bytes3, sizeof(tx_bytes3));
+//		tick = tock;
+//		}
 		StaticCanProtocol.thread(&link1);
-		StaticCanProtocol.thread(&link2);
+//		StaticCanProtocol.thread(&link2);
+		HAL_Delay(1000);
 	}
 }
 
@@ -212,15 +215,15 @@ static void runTx() {
 		}
 		uint32_t tock = HAL_GetTick();
 //		if ((tock - tick) >= 100) {
-		StaticCanProtocol.addTxMessagePtr(&link1, 0xA, tx_bytes1, sizeof(tx_bytes1));
-		StaticCanProtocol.addTxMessagePtr(&link1, 0xB, tx_bytes2, sizeof(tx_bytes2));
-		StaticCanProtocol.addTxMessagePtr(&link1, 0xC, tx_bytes3, sizeof(tx_bytes3));
-		StaticCanProtocol.addTxMessagePtr(&link2, 0xD, tx_bytes4, sizeof(tx_bytes4));
-		StaticCanProtocol.addTxMessagePtr(&link2, 0xE, tx_bytes3, sizeof(tx_bytes3));
-		tick = tock;
+//		StaticCanProtocol.addTxMessagePtr(&link1, 0xA, tx_bytes1, sizeof(tx_bytes1));
+//		StaticCanProtocol.addTxMessagePtr(&link1, 0xB, tx_bytes2, sizeof(tx_bytes2));
+//		StaticCanProtocol.addTxMessagePtr(&link1, 0xC, tx_bytes3, sizeof(tx_bytes3));
+//		StaticCanProtocol.addTxMessagePtr(&link2, 0xD, tx_bytes4, sizeof(tx_bytes4));
+//		StaticCanProtocol.addTxMessagePtr(&link2, 0xE, tx_bytes3, sizeof(tx_bytes3));
+//		tick = tock;
 //		};
 		StaticCanProtocol.thread(&link1);
-		StaticCanProtocol.thread(&link2);
+//		StaticCanProtocol.thread(&link2);
 	}
 }
 
