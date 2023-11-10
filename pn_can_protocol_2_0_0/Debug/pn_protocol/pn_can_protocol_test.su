@@ -1,0 +1,11 @@
+../pn_protocol/pn_can_protocol_test.c:31:17:newLink	552	static
+../pn_protocol/pn_can_protocol_test.c:55:13:addTxMsg	32	static
+../pn_protocol/pn_can_protocol_test.c:67:13:txThread	96	dynamic
+../pn_protocol/pn_can_protocol_test.c:93:13:rxThread	96	dynamic
+../pn_protocol/pn_can_protocol_test.c:131:13:thread	16	static
+../pn_protocol/pn_can_protocol_test.c:136:13:canReceive	32	static
+../pn_protocol/pn_can_protocol_test.c:148:13:canInit	48	static
+../pn_protocol/pn_can_protocol_test.c:174:6:canInterrupt	8	static
+../pn_protocol/pn_can_protocol_test.c:185:12:canSend	24	static
+../pn_protocol/pn_can_protocol_test.c:199:6:txCallback	32	static
+../pn_protocol/pn_can_protocol_test.c:211:6:runTx	16	static
