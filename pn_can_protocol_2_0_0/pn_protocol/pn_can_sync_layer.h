@@ -28,17 +28,17 @@ typedef struct {
 	uint8_t *bytes;
 	uint16_t size;
 	uint8_t numTry;
-	///////////////////////
+	////////////For transmitter///////////
 	uint8_t frameIndex;
-	//////////////////////
+	////////////For receiver//////////
 	uint8_t frameRecords[19];
-	///////////////////////
+	////////////For both///////////
 	uint32_t crc;
 	SyncLayerCANTrack track;
 	uint8_t doesCRCMatch;
 	uint32_t waitTill;
 	uint8_t isTimeOut;
-
+	uint8_t isBytesDynamicallyAllocated;
 } SyncLayerCANData;
 
 typedef struct {

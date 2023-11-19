@@ -24,9 +24,9 @@ pn_protocol/pn_can_protocol_test.o: ../pn_protocol/pn_can_protocol_test.c \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h \
  ../pn_protocol/pn_can_sync_layer.h \
- C:/Users/NIRUJA/Desktop/Github/pn_can_protocol/pn_can_protocol_2_0_0/utils/hash_map.h \
- C:/Users/NIRUJA/Desktop/Github/pn_can_protocol/pn_can_protocol_2_0_0/utils/buddy_heap.h \
- C:/Users/NIRUJA/Desktop/Github/pn_can_protocol/pn_can_protocol_2_0_0/utils/buddy_heap.h \
+ C:/Users/peter/OneDrive/Desktop/Github/pn_can_protocol/pn_can_protocol_2_0_0/utils/hash_map.h \
+ C:/Users/peter/OneDrive/Desktop/Github/pn_can_protocol/pn_can_protocol_2_0_0/utils/buddy_heap.h \
+ C:/Users/peter/OneDrive/Desktop/Github/pn_can_protocol/pn_can_protocol_2_0_0/utils/buddy_heap.h \
  ../pn_protocol/CAN_queue.h
 ../Core/Inc/main.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h:
@@ -54,7 +54,7 @@ pn_protocol/pn_can_protocol_test.o: ../pn_protocol/pn_can_protocol_test.c \
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h:
 ../pn_protocol/pn_can_sync_layer.h:
-C:/Users/NIRUJA/Desktop/Github/pn_can_protocol/pn_can_protocol_2_0_0/utils/hash_map.h:
-C:/Users/NIRUJA/Desktop/Github/pn_can_protocol/pn_can_protocol_2_0_0/utils/buddy_heap.h:
-C:/Users/NIRUJA/Desktop/Github/pn_can_protocol/pn_can_protocol_2_0_0/utils/buddy_heap.h:
+C:/Users/peter/OneDrive/Desktop/Github/pn_can_protocol/pn_can_protocol_2_0_0/utils/hash_map.h:
+C:/Users/peter/OneDrive/Desktop/Github/pn_can_protocol/pn_can_protocol_2_0_0/utils/buddy_heap.h:
+C:/Users/peter/OneDrive/Desktop/Github/pn_can_protocol/pn_can_protocol_2_0_0/utils/buddy_heap.h:
 ../pn_protocol/CAN_queue.h:
