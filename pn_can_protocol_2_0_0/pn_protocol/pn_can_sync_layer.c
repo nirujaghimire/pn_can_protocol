@@ -10,8 +10,8 @@
 #include "crc.h"
 #include "stdarg.h"
 
-#define TRANSMIT_TIMEOUT 10000000
-#define RECEIVE_TIMEOUT  10000000
+#define TRANSMIT_TIMEOUT 1000
+#define RECEIVE_TIMEOUT  1000
 
 //#define CONSOLE_ENABLE
 
