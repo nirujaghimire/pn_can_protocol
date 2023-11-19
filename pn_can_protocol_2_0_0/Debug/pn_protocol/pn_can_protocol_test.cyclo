@@ -1,0 +1,14 @@
+pn_can_protocol_test.c:33:17:newLink	1
+pn_can_protocol_test.c:57:13:addTxMsgPtr	1
+pn_can_protocol_test.c:71:13:addTxMsg	2
+pn_can_protocol_test.c:88:13:addRxMsgPtr	1
+pn_can_protocol_test.c:98:13:txThread	9
+pn_can_protocol_test.c:136:13:rxThread	11
+pn_can_protocol_test.c:190:13:thread	1
+pn_can_protocol_test.c:195:13:canReceive	6
+pn_can_protocol_test.c:210:13:canInit	4
+pn_can_protocol_test.c:236:6:canInterrupt	1
+pn_can_protocol_test.c:247:12:canSend	1
+pn_can_protocol_test.c:261:5:txCallback	3
+pn_can_protocol_test.c:273:5:rxCallback	3
+pn_can_protocol_test.c:288:6:run	3

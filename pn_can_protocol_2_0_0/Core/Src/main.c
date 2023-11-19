@@ -98,8 +98,8 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  extern void runTx();
-  runTx();
+  extern void run();
+  run();
   while (1)
   {
     /* USER CODE END WHILE */

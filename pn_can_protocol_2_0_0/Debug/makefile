@@ -54,6 +54,9 @@ default.size.stdout \
 OBJDUMP_LIST += \
 pn_can_protocol_2_0_0.list \
 
+OBJCOPY_HEX += \
+pn_can_protocol_2_0_0.hex \
+
 
 # All Target
 all: main-build
@@ -62,8 +65,8 @@ all: main-build
 main-build: pn_can_protocol_2_0_0.elf secondary-outputs
 
 # Tool invocations
-pn_can_protocol_2_0_0.elf pn_can_protocol_2_0_0.map: $(OBJS) $(USER_OBJS) C:\Users\NIRUJA\Desktop\Github\pn_can_protocol\pn_can_protocol_2_0_0\STM32F103C8TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "pn_can_protocol_2_0_0.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"C:\Users\NIRUJA\Desktop\Github\pn_can_protocol\pn_can_protocol_2_0_0\STM32F103C8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="pn_can_protocol_2_0_0.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+pn_can_protocol_2_0_0.elf pn_can_protocol_2_0_0.map: $(OBJS) $(USER_OBJS) C:\Users\peter\OneDrive\Desktop\Github\pn_can_protocol\pn_can_protocol_2_0_0\STM32F103C8TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "pn_can_protocol_2_0_0.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"C:\Users\peter\OneDrive\Desktop\Github\pn_can_protocol\pn_can_protocol_2_0_0\STM32F103C8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="pn_can_protocol_2_0_0.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -77,12 +80,17 @@ pn_can_protocol_2_0_0.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL
 	@echo 'Finished building: $@'
 	@echo ' '
 
+pn_can_protocol_2_0_0.hex: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-objcopy  -O ihex $(EXECUTABLES) "pn_can_protocol_2_0_0.hex"
+	@echo 'Finished building: $@'
+	@echo ' '
+
 # Other Targets
 clean:
-	-$(RM) default.size.stdout pn_can_protocol_2_0_0.elf pn_can_protocol_2_0_0.list pn_can_protocol_2_0_0.map
+	-$(RM) default.size.stdout pn_can_protocol_2_0_0.elf pn_can_protocol_2_0_0.hex pn_can_protocol_2_0_0.list pn_can_protocol_2_0_0.map
 	-@echo ' '
 
-secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST)
+secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST) $(OBJCOPY_HEX)
 
 fail-specified-linker-script-missing:
 	@echo 'Error: Cannot find the specified linker script. Check the linker settings in the build configuration.'
