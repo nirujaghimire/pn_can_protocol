@@ -27,23 +27,23 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   ALLOC
  11 .ARM.attributes 00000029  00000000  00000000  0002051c  2**0
                   CONTENTS, READONLY
- 12 .debug_info   0000d448  00000000  00000000  00020545  2**0
+ 12 .debug_info   0000d44a  00000000  00000000  00020545  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 13 .debug_abbrev 00002813  00000000  00000000  0002d98d  2**0
+ 13 .debug_abbrev 00002813  00000000  00000000  0002d98f  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 14 .debug_aranges 00000ae0  00000000  00000000  000301a0  2**3
+ 14 .debug_aranges 00000ae0  00000000  00000000  000301a8  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 15 .debug_ranges 00000a10  00000000  00000000  00030c80  2**3
+ 15 .debug_ranges 00000a10  00000000  00000000  00030c88  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 16 .debug_macro  00019418  00000000  00000000  00031690  2**0
+ 16 .debug_macro  00019432  00000000  00000000  00031698  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 17 .debug_line   0000dc90  00000000  00000000  0004aaa8  2**0
+ 17 .debug_line   0000dc91  00000000  00000000  0004aaca  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_str    00086a55  00000000  00000000  00058738  2**0
+ 18 .debug_str    00086a8a  00000000  00000000  0005875b  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .comment      00000050  00000000  00000000  000df18d  2**0
+ 19 .comment      00000050  00000000  00000000  000df1e5  2**0
                   CONTENTS, READONLY
- 20 .debug_frame  00003378  00000000  00000000  000df1e0  2**2
+ 20 .debug_frame  00003378  00000000  00000000  000df238  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -7252,7 +7252,7 @@ static void print(Queue *queue) {
  800277c:	08006088 	.word	0x08006088
  8002780:	08006090 	.word	0x08006090
 
-08002784 <newLink>:
+08002784 <new>:
 		uint32_t endReqID, uint32_t endAckID,
 		int (*canSend)(uint32_t id, uint8_t *bytes, uint8_t len),
 		int (*txCallback)(uint32_t id, uint8_t *bytes, uint16_t size,
@@ -7267,10 +7267,10 @@ static void print(Queue *queue) {
  8002794:	f8c7 21f4 	str.w	r2, [r7, #500]	; 0x1f4
  8002798:	f8c7 31f0 	str.w	r3, [r7, #496]	; 0x1f0
 	int n = linkCount++;
- 800279c:	4b68      	ldr	r3, [pc, #416]	; (8002940 <newLink+0x1bc>)
+ 800279c:	4b68      	ldr	r3, [pc, #416]	; (8002940 <new+0x1bc>)
  800279e:	681b      	ldr	r3, [r3, #0]
  80027a0:	1c5a      	adds	r2, r3, #1
- 80027a2:	4967      	ldr	r1, [pc, #412]	; (8002940 <newLink+0x1bc>)
+ 80027a2:	4967      	ldr	r1, [pc, #412]	; (8002940 <new+0x1bc>)
  80027a4:	600a      	str	r2, [r1, #0]
  80027a6:	f8c7 3214 	str.w	r3, [r7, #532]	; 0x214
 	SyncLayerCANLink syncLink = { .startReqID = startReqID, .startAckID =
@@ -7287,7 +7287,7 @@ static void print(Queue *queue) {
 			startAckID, .endReqID = endReqID, .endAckID = endAckID, .canSend =
 			canSend };
 	link[n].link = syncLink;
- 80027d2:	495c      	ldr	r1, [pc, #368]	; (8002944 <newLink+0x1c0>)
+ 80027d2:	495c      	ldr	r1, [pc, #368]	; (8002944 <new+0x1c0>)
  80027d4:	f8d7 2214 	ldr.w	r2, [r7, #532]	; 0x214
  80027d8:	4613      	mov	r3, r2
  80027da:	01db      	lsls	r3, r3, #7
@@ -7301,7 +7301,7 @@ static void print(Queue *queue) {
  80027ec:	6823      	ldr	r3, [r4, #0]
  80027ee:	602b      	str	r3, [r5, #0]
 	link[n].txCallback = txCallback;
- 80027f0:	4954      	ldr	r1, [pc, #336]	; (8002944 <newLink+0x1c0>)
+ 80027f0:	4954      	ldr	r1, [pc, #336]	; (8002944 <new+0x1c0>)
  80027f2:	f8d7 2214 	ldr.w	r2, [r7, #532]	; 0x214
  80027f6:	4613      	mov	r3, r2
  80027f8:	01db      	lsls	r3, r3, #7
@@ -7312,7 +7312,7 @@ static void print(Queue *queue) {
  8002802:	f8d7 222c 	ldr.w	r2, [r7, #556]	; 0x22c
  8002806:	601a      	str	r2, [r3, #0]
 	link[n].rxCallback = rxCallback;
- 8002808:	494e      	ldr	r1, [pc, #312]	; (8002944 <newLink+0x1c0>)
+ 8002808:	494e      	ldr	r1, [pc, #312]	; (8002944 <new+0x1c0>)
  800280a:	f8d7 2214 	ldr.w	r2, [r7, #532]	; 0x214
  800280e:	4613      	mov	r3, r2
  8002810:	01db      	lsls	r3, r3, #7
@@ -7323,7 +7323,7 @@ static void print(Queue *queue) {
  800281a:	f8d7 2230 	ldr.w	r2, [r7, #560]	; 0x230
  800281e:	601a      	str	r2, [r3, #0]
 	link[n].heap = heap;
- 8002820:	4948      	ldr	r1, [pc, #288]	; (8002944 <newLink+0x1c0>)
+ 8002820:	4948      	ldr	r1, [pc, #288]	; (8002944 <new+0x1c0>)
  8002822:	f8d7 2214 	ldr.w	r2, [r7, #532]	; 0x214
  8002826:	4613      	mov	r3, r2
  8002828:	01db      	lsls	r3, r3, #7
@@ -7336,15 +7336,15 @@ static void print(Queue *queue) {
 	if(isQueue)
  8002838:	f8d7 3238 	ldr.w	r3, [r7, #568]	; 0x238
  800283c:	2b00      	cmp	r3, #0
- 800283e:	d011      	beq.n	8002864 <newLink+0xe0>
+ 800283e:	d011      	beq.n	8002864 <new+0xe0>
 		link[n].txQueue = StaticQueue.new(heap,NULL);
- 8002840:	4b41      	ldr	r3, [pc, #260]	; (8002948 <newLink+0x1c4>)
+ 8002840:	4b41      	ldr	r3, [pc, #260]	; (8002948 <new+0x1c4>)
  8002842:	681b      	ldr	r3, [r3, #0]
  8002844:	2100      	movs	r1, #0
  8002846:	f8d7 0234 	ldr.w	r0, [r7, #564]	; 0x234
  800284a:	4798      	blx	r3
  800284c:	4601      	mov	r1, r0
- 800284e:	483d      	ldr	r0, [pc, #244]	; (8002944 <newLink+0x1c0>)
+ 800284e:	483d      	ldr	r0, [pc, #244]	; (8002944 <new+0x1c0>)
  8002850:	f8d7 2214 	ldr.w	r2, [r7, #532]	; 0x214
  8002854:	4613      	mov	r3, r2
  8002856:	01db      	lsls	r3, r3, #7
@@ -7353,15 +7353,15 @@ static void print(Queue *queue) {
  800285c:	4403      	add	r3, r0
  800285e:	3324      	adds	r3, #36	; 0x24
  8002860:	6019      	str	r1, [r3, #0]
- 8002862:	e00f      	b.n	8002884 <newLink+0x100>
+ 8002862:	e00f      	b.n	8002884 <new+0x100>
 	else
 		link[n].txMap = StaticHashMap.new(heap);
- 8002864:	4b39      	ldr	r3, [pc, #228]	; (800294c <newLink+0x1c8>)
+ 8002864:	4b39      	ldr	r3, [pc, #228]	; (800294c <new+0x1c8>)
  8002866:	681b      	ldr	r3, [r3, #0]
  8002868:	f8d7 0234 	ldr.w	r0, [r7, #564]	; 0x234
  800286c:	4798      	blx	r3
  800286e:	4601      	mov	r1, r0
- 8002870:	4834      	ldr	r0, [pc, #208]	; (8002944 <newLink+0x1c0>)
+ 8002870:	4834      	ldr	r0, [pc, #208]	; (8002944 <new+0x1c0>)
  8002872:	f8d7 2214 	ldr.w	r2, [r7, #532]	; 0x214
  8002876:	4613      	mov	r3, r2
  8002878:	01db      	lsls	r3, r3, #7
@@ -7371,12 +7371,12 @@ static void print(Queue *queue) {
  8002880:	3320      	adds	r3, #32
  8002882:	6019      	str	r1, [r3, #0]
 	link[n].rxMap = StaticHashMap.new(heap);
- 8002884:	4b31      	ldr	r3, [pc, #196]	; (800294c <newLink+0x1c8>)
+ 8002884:	4b31      	ldr	r3, [pc, #196]	; (800294c <new+0x1c8>)
  8002886:	681b      	ldr	r3, [r3, #0]
  8002888:	f8d7 0234 	ldr.w	r0, [r7, #564]	; 0x234
  800288c:	4798      	blx	r3
  800288e:	4601      	mov	r1, r0
- 8002890:	482c      	ldr	r0, [pc, #176]	; (8002944 <newLink+0x1c0>)
+ 8002890:	482c      	ldr	r0, [pc, #176]	; (8002944 <new+0x1c0>)
  8002892:	f8d7 2214 	ldr.w	r2, [r7, #532]	; 0x214
  8002896:	4613      	mov	r3, r2
  8002898:	01db      	lsls	r3, r3, #7
@@ -7386,9 +7386,9 @@ static void print(Queue *queue) {
  80028a0:	3328      	adds	r3, #40	; 0x28
  80028a2:	6019      	str	r1, [r3, #0]
 	link[n].txCanQueue = StaticCANQueue.new();
- 80028a4:	4b2a      	ldr	r3, [pc, #168]	; (8002950 <newLink+0x1cc>)
+ 80028a4:	4b2a      	ldr	r3, [pc, #168]	; (8002950 <new+0x1cc>)
  80028a6:	6819      	ldr	r1, [r3, #0]
- 80028a8:	4826      	ldr	r0, [pc, #152]	; (8002944 <newLink+0x1c0>)
+ 80028a8:	4826      	ldr	r0, [pc, #152]	; (8002944 <new+0x1c0>)
  80028aa:	f8d7 2214 	ldr.w	r2, [r7, #532]	; 0x214
  80028ae:	4613      	mov	r3, r2
  80028b0:	01db      	lsls	r3, r3, #7
@@ -7407,9 +7407,9 @@ static void print(Queue *queue) {
  80028d2:	4618      	mov	r0, r3
  80028d4:	f002 fb48 	bl	8004f68 <memcpy>
 	link[n].rxCanQueue = StaticCANQueue.new();
- 80028d8:	4b1d      	ldr	r3, [pc, #116]	; (8002950 <newLink+0x1cc>)
+ 80028d8:	4b1d      	ldr	r3, [pc, #116]	; (8002950 <new+0x1cc>)
  80028da:	6819      	ldr	r1, [r3, #0]
- 80028dc:	4819      	ldr	r0, [pc, #100]	; (8002944 <newLink+0x1c0>)
+ 80028dc:	4819      	ldr	r0, [pc, #100]	; (8002944 <new+0x1c0>)
  80028de:	f8d7 2214 	ldr.w	r2, [r7, #532]	; 0x214
  80028e2:	4613      	mov	r3, r2
  80028e4:	01db      	lsls	r3, r3, #7
@@ -7428,7 +7428,7 @@ static void print(Queue *queue) {
  8002906:	461a      	mov	r2, r3
  8002908:	f002 fb2e 	bl	8004f68 <memcpy>
 	link[n].isQueue = isQueue;
- 800290c:	490d      	ldr	r1, [pc, #52]	; (8002944 <newLink+0x1c0>)
+ 800290c:	490d      	ldr	r1, [pc, #52]	; (8002944 <new+0x1c0>)
  800290e:	f8d7 2214 	ldr.w	r2, [r7, #532]	; 0x214
  8002912:	4613      	mov	r3, r2
  8002914:	01db      	lsls	r3, r3, #7
@@ -7444,7 +7444,7 @@ static void print(Queue *queue) {
  800292c:	01db      	lsls	r3, r3, #7
  800292e:	4413      	add	r3, r2
  8002930:	00db      	lsls	r3, r3, #3
- 8002932:	4a04      	ldr	r2, [pc, #16]	; (8002944 <newLink+0x1c0>)
+ 8002932:	4a04      	ldr	r2, [pc, #16]	; (8002944 <new+0x1c0>)
  8002934:	4413      	add	r3, r2
 }
  8002936:	4618      	mov	r0, r3
@@ -8895,7 +8895,7 @@ void run() {
  8003304:	f44f 6284 	mov.w	r2, #1056	; 0x420
  8003308:	4911      	ldr	r1, [pc, #68]	; (8003350 <run+0x8c>)
  800330a:	47a0      	blx	r4
-	canLink = StaticCANLink.newLink(0x1, 0x2, 0x3, 0x4, canSend, txCallback,
+	canLink = StaticCANLink.new(0x1, 0x2, 0x3, 0x4, canSend, txCallback,
  800330c:	4b11      	ldr	r3, [pc, #68]	; (8003354 <run+0x90>)
  800330e:	681c      	ldr	r4, [r3, #0]
  8003310:	2300      	movs	r3, #0

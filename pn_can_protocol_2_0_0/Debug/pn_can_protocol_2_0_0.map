@@ -2210,6 +2210,7 @@ Discarded input sections
  .group         0x0000000000000000        0xc ./pn_protocol/pn_can_protocol.o
  .group         0x0000000000000000        0xc ./pn_protocol/pn_can_protocol.o
  .group         0x0000000000000000        0xc ./pn_protocol/pn_can_protocol.o
+ .group         0x0000000000000000        0xc ./pn_protocol/pn_can_protocol.o
  .text          0x0000000000000000        0x0 ./pn_protocol/pn_can_protocol.o
  .data          0x0000000000000000        0x0 ./pn_protocol/pn_can_protocol.o
  .bss           0x0000000000000000        0x0 ./pn_protocol/pn_can_protocol.o
@@ -2236,6 +2237,7 @@ Discarded input sections
  .debug_macro   0x0000000000000000      0x341 ./pn_protocol/pn_can_protocol.o
  .debug_macro   0x0000000000000000       0x16 ./pn_protocol/pn_can_protocol.o
  .debug_macro   0x0000000000000000       0x29 ./pn_protocol/pn_can_protocol.o
+ .group         0x0000000000000000        0xc ./pn_protocol/pn_can_protocol_test.o
  .group         0x0000000000000000        0xc ./pn_protocol/pn_can_protocol_test.o
  .group         0x0000000000000000        0xc ./pn_protocol/pn_can_protocol_test.o
  .group         0x0000000000000000        0xc ./pn_protocol/pn_can_protocol_test.o
@@ -2379,6 +2381,7 @@ Discarded input sections
  .debug_macro   0x0000000000000000       0x16 ./pn_protocol/pn_can_protocol_test.o
  .debug_macro   0x0000000000000000       0x16 ./pn_protocol/pn_can_protocol_test.o
  .debug_macro   0x0000000000000000       0x29 ./pn_protocol/pn_can_protocol_test.o
+ .debug_macro   0x0000000000000000       0x10 ./pn_protocol/pn_can_protocol_test.o
  .group         0x0000000000000000        0xc ./pn_protocol/pn_can_sync_layer.o
  .group         0x0000000000000000        0xc ./pn_protocol/pn_can_sync_layer.o
  .group         0x0000000000000000        0xc ./pn_protocol/pn_can_sync_layer.o
@@ -3434,7 +3437,7 @@ LOAD c:/st/stm32cubeide_1.10.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.ext
  .text.peek     0x0000000008002638       0x2c ./pn_protocol/CAN_queue.o
  .text.dequeue  0x0000000008002664       0xa8 ./pn_protocol/CAN_queue.o
  .text.print    0x000000000800270c       0x78 ./pn_protocol/CAN_queue.o
- .text.newLink  0x0000000008002784      0x1d0 ./pn_protocol/pn_can_protocol.o
+ .text.new      0x0000000008002784      0x1d0 ./pn_protocol/pn_can_protocol.o
  .text.addTxMsgPtr
                 0x0000000008002954       0x8c ./pn_protocol/pn_can_protocol.o
  .text.addTxMsg
@@ -4061,7 +4064,7 @@ LOAD c:/st/stm32cubeide_1.10.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.ext
 LOAD c:/st/stm32cubeide_1.10.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.200.202301161003/tools/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7-m/nofp\libm.a
 LOAD c:/st/stm32cubeide_1.10.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.200.202301161003/tools/bin/../lib/gcc/arm-none-eabi/10.3.1/thumb/v7-m/nofp\libgcc.a
 
-.debug_info     0x0000000000000000     0xd448
+.debug_info     0x0000000000000000     0xd44a
  .debug_info    0x0000000000000000      0xd40 ./Core/Src/main.o
  .debug_info    0x0000000000000d40      0xdde ./Core/Src/stm32f1xx_hal_msp.o
  .debug_info    0x0000000000001b1e      0x55a ./Core/Src/stm32f1xx_it.o
@@ -4076,13 +4079,13 @@ LOAD c:/st/stm32cubeide_1.10.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.ext
  .debug_info    0x0000000000005368      0x865 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc.o
  .debug_info    0x0000000000005bcd     0x31b2 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_uart.o
  .debug_info    0x0000000000008d7f      0x3da ./pn_protocol/CAN_queue.o
- .debug_info    0x0000000000009159     0x1010 ./pn_protocol/pn_can_protocol.o
- .debug_info    0x000000000000a169      0xed2 ./pn_protocol/pn_can_protocol_test.o
- .debug_info    0x000000000000b03b      0x780 ./pn_protocol/pn_can_sync_layer.o
- .debug_info    0x000000000000b7bb      0x86b ./utils/buddy_heap.o
- .debug_info    0x000000000000c026      0x1c3 ./utils/crc.o
- .debug_info    0x000000000000c1e9      0xa94 ./utils/hash_map.o
- .debug_info    0x000000000000cc7d      0x7cb ./utils/queue.o
+ .debug_info    0x0000000000009159     0x1012 ./pn_protocol/pn_can_protocol.o
+ .debug_info    0x000000000000a16b      0xed2 ./pn_protocol/pn_can_protocol_test.o
+ .debug_info    0x000000000000b03d      0x780 ./pn_protocol/pn_can_sync_layer.o
+ .debug_info    0x000000000000b7bd      0x86b ./utils/buddy_heap.o
+ .debug_info    0x000000000000c028      0x1c3 ./utils/crc.o
+ .debug_info    0x000000000000c1eb      0xa94 ./utils/hash_map.o
+ .debug_info    0x000000000000cc7f      0x7cb ./utils/queue.o
 
 .debug_abbrev   0x0000000000000000     0x2813
  .debug_abbrev  0x0000000000000000      0x2b5 ./Core/Src/main.o
@@ -4174,7 +4177,7 @@ LOAD c:/st/stm32cubeide_1.10.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.ext
  .debug_ranges  0x0000000000000910       0x88 ./utils/hash_map.o
  .debug_ranges  0x0000000000000998       0x78 ./utils/queue.o
 
-.debug_macro    0x0000000000000000    0x19418
+.debug_macro    0x0000000000000000    0x19432
  .debug_macro   0x0000000000000000      0x301 ./Core/Src/main.o
  .debug_macro   0x0000000000000301      0xa6c ./Core/Src/main.o
  .debug_macro   0x0000000000000d6d      0x21b ./Core/Src/main.o
@@ -4272,24 +4275,25 @@ LOAD c:/st/stm32cubeide_1.10.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.ext
  .debug_macro   0x0000000000017f99      0x1d7 ./pn_protocol/CAN_queue.o
  .debug_macro   0x0000000000018170       0x97 ./pn_protocol/CAN_queue.o
  .debug_macro   0x0000000000018207       0xfd ./pn_protocol/CAN_queue.o
- .debug_macro   0x0000000000018304      0x176 ./pn_protocol/pn_can_protocol.o
- .debug_macro   0x000000000001847a       0x10 ./pn_protocol/pn_can_protocol.o
- .debug_macro   0x000000000001848a       0x16 ./pn_protocol/pn_can_protocol.o
- .debug_macro   0x00000000000184a0       0x16 ./pn_protocol/pn_can_protocol.o
- .debug_macro   0x00000000000184b6       0x10 ./pn_protocol/pn_can_protocol.o
- .debug_macro   0x00000000000184c6      0x10e ./pn_protocol/pn_can_protocol.o
- .debug_macro   0x00000000000185d4       0x8d ./pn_protocol/pn_can_protocol.o
- .debug_macro   0x0000000000018661      0x37d ./pn_protocol/pn_can_protocol_test.o
- .debug_macro   0x00000000000189de      0x32a ./pn_protocol/pn_can_sync_layer.o
- .debug_macro   0x0000000000018d08       0x4c ./pn_protocol/pn_can_sync_layer.o
- .debug_macro   0x0000000000018d54      0x1d7 ./utils/buddy_heap.o
- .debug_macro   0x0000000000018f2b       0x6d ./utils/crc.o
- .debug_macro   0x0000000000018f98      0x226 ./utils/hash_map.o
- .debug_macro   0x00000000000191be      0x20e ./utils/queue.o
- .debug_macro   0x00000000000193cc       0x10 ./utils/queue.o
- .debug_macro   0x00000000000193dc       0x3c ./utils/queue.o
+ .debug_macro   0x0000000000018304      0x17b ./pn_protocol/pn_can_protocol.o
+ .debug_macro   0x000000000001847f       0x10 ./pn_protocol/pn_can_protocol.o
+ .debug_macro   0x000000000001848f       0x16 ./pn_protocol/pn_can_protocol.o
+ .debug_macro   0x00000000000184a5       0x16 ./pn_protocol/pn_can_protocol.o
+ .debug_macro   0x00000000000184bb       0x10 ./pn_protocol/pn_can_protocol.o
+ .debug_macro   0x00000000000184cb      0x10e ./pn_protocol/pn_can_protocol.o
+ .debug_macro   0x00000000000185d9       0x8d ./pn_protocol/pn_can_protocol.o
+ .debug_macro   0x0000000000018666       0x10 ./pn_protocol/pn_can_protocol.o
+ .debug_macro   0x0000000000018676      0x382 ./pn_protocol/pn_can_protocol_test.o
+ .debug_macro   0x00000000000189f8      0x32a ./pn_protocol/pn_can_sync_layer.o
+ .debug_macro   0x0000000000018d22       0x4c ./pn_protocol/pn_can_sync_layer.o
+ .debug_macro   0x0000000000018d6e      0x1d7 ./utils/buddy_heap.o
+ .debug_macro   0x0000000000018f45       0x6d ./utils/crc.o
+ .debug_macro   0x0000000000018fb2      0x226 ./utils/hash_map.o
+ .debug_macro   0x00000000000191d8      0x20e ./utils/queue.o
+ .debug_macro   0x00000000000193e6       0x10 ./utils/queue.o
+ .debug_macro   0x00000000000193f6       0x3c ./utils/queue.o
 
-.debug_line     0x0000000000000000     0xdc90
+.debug_line     0x0000000000000000     0xdc91
  .debug_line    0x0000000000000000      0x95d ./Core/Src/main.o
  .debug_line    0x000000000000095d      0x8de ./Core/Src/stm32f1xx_hal_msp.o
  .debug_line    0x000000000000123b      0x921 ./Core/Src/stm32f1xx_it.o
@@ -4304,15 +4308,15 @@ LOAD c:/st/stm32cubeide_1.10.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.ext
  .debug_line    0x0000000000005e06      0xd17 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc.o
  .debug_line    0x0000000000006b1d     0x283c ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_uart.o
  .debug_line    0x0000000000009359      0x684 ./pn_protocol/CAN_queue.o
- .debug_line    0x00000000000099dd      0x9a8 ./pn_protocol/pn_can_protocol.o
- .debug_line    0x000000000000a385      0xa8c ./pn_protocol/pn_can_protocol_test.o
- .debug_line    0x000000000000ae11      0xd81 ./pn_protocol/pn_can_sync_layer.o
- .debug_line    0x000000000000bb92      0xa0d ./utils/buddy_heap.o
- .debug_line    0x000000000000c59f      0x445 ./utils/crc.o
- .debug_line    0x000000000000c9e4      0xa32 ./utils/hash_map.o
- .debug_line    0x000000000000d416      0x87a ./utils/queue.o
+ .debug_line    0x00000000000099dd      0x9a9 ./pn_protocol/pn_can_protocol.o
+ .debug_line    0x000000000000a386      0xa8c ./pn_protocol/pn_can_protocol_test.o
+ .debug_line    0x000000000000ae12      0xd81 ./pn_protocol/pn_can_sync_layer.o
+ .debug_line    0x000000000000bb93      0xa0d ./utils/buddy_heap.o
+ .debug_line    0x000000000000c5a0      0x445 ./utils/crc.o
+ .debug_line    0x000000000000c9e5      0xa32 ./utils/hash_map.o
+ .debug_line    0x000000000000d417      0x87a ./utils/queue.o
 
-.debug_str      0x0000000000000000    0x86a55
+.debug_str      0x0000000000000000    0x86a8a
  .debug_str     0x0000000000000000    0x82b2f ./Core/Src/main.o
                                       0x82efb (size before relaxing)
  .debug_str     0x0000000000082b2f      0x383 ./Core/Src/stm32f1xx_hal_msp.o
@@ -4341,19 +4345,19 @@ LOAD c:/st/stm32cubeide_1.10.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.ext
                                       0x7f434 (size before relaxing)
  .debug_str     0x0000000000085f1f       0xa8 ./pn_protocol/CAN_queue.o
                                        0x7d54 (size before relaxing)
- .debug_str     0x0000000000085fc7      0x56c ./pn_protocol/pn_can_protocol.o
-                                       0x7407 (size before relaxing)
- .debug_str     0x0000000000086533       0x7e ./pn_protocol/pn_can_protocol_test.o
-                                      0x82f27 (size before relaxing)
- .debug_str     0x00000000000865b1      0x1ca ./pn_protocol/pn_can_sync_layer.o
+ .debug_str     0x0000000000085fc7      0x5a1 ./pn_protocol/pn_can_protocol.o
+                                       0x743c (size before relaxing)
+ .debug_str     0x0000000000086568       0x7e ./pn_protocol/pn_can_protocol_test.o
+                                      0x82f5c (size before relaxing)
+ .debug_str     0x00000000000865e6      0x1ca ./pn_protocol/pn_can_sync_layer.o
                                       0x82a9b (size before relaxing)
- .debug_str     0x000000000008677b       0xef ./utils/buddy_heap.o
+ .debug_str     0x00000000000867b0       0xef ./utils/buddy_heap.o
                                        0x7e93 (size before relaxing)
- .debug_str     0x000000000008686a       0x39 ./utils/crc.o
+ .debug_str     0x000000000008689f       0x39 ./utils/crc.o
                                        0x3c51 (size before relaxing)
- .debug_str     0x00000000000868a3       0xd9 ./utils/hash_map.o
+ .debug_str     0x00000000000868d8       0xd9 ./utils/hash_map.o
                                        0x800c (size before relaxing)
- .debug_str     0x000000000008697c       0xd9 ./utils/queue.o
+ .debug_str     0x00000000000869b1       0xd9 ./utils/queue.o
                                        0x7f77 (size before relaxing)
 
 .comment        0x0000000000000000       0x50

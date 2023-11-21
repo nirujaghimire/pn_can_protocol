@@ -47,7 +47,7 @@ static int linkCount = 0;
  * @param isQueue		: 1 for use queue in transmit and 0 for use of map in transmit
  * @return				: Return the newly created link
  */
-static CANLink* newLink(uint32_t startReqID, uint32_t startAckID,
+static CANLink* new(uint32_t startReqID, uint32_t startAckID,
 		uint32_t endReqID, uint32_t endAckID,
 		int (*canSend)(uint32_t id, uint8_t *bytes, uint8_t len),
 		int (*txCallback)(uint32_t id, uint8_t *bytes, uint16_t size,
@@ -301,6 +301,6 @@ struct CANLinkControl StaticCANLink = {
 		.addTxMsg = addTxMsg,
 		.addTxMsgPtr = addTxMsgPtr,
 		.canReceive = canReceive,
-		.newLink = newLink,
+		.new = new,
 		.thread = thread,
 };
