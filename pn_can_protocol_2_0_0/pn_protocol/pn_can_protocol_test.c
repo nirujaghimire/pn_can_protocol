@@ -56,33 +56,33 @@ static CanLink* newLink(uint32_t startReqID, uint32_t startAckID,
 
 static void addTxMsgPtr(CanLink *link, uint32_t id, uint8_t *bytes,
 		uint16_t size) {
-	SyncLayerCANData *syndData = StaticBuddyHeap.malloc(link->heap,
+	SyncLayerCANData *syncData = StaticBuddyHeap.malloc(link->heap,
 			sizeof(SyncLayerCANData));
-	syndData->id = id;
-	syndData->bytes = bytes;
-	syndData->isBytesDynamicallyAllocated = 0;
-	syndData->size = size;
-	syndData->numTry = 3;
-	syndData->track = SYNC_LAYER_CAN_START_REQ;
-	syndData->waitTill = 0xFFFFFFFF;
-	StaticHashMap.insert(link->txMap, id, syndData);
+	syncData->id = id;
+	syncData->bytes = bytes;
+	syncData->isBytesDynamicallyAllocated = 0;
+	syncData->size = size;
+	syncData->numTry = 3;
+	syncData->track = SYNC_LAYER_CAN_START_REQ;
+	syncData->waitTill = 0xFFFFFFFF;
+	StaticHashMap.insert(link->txMap, id, syncData);
 }
 
 static void addTxMsg(CanLink *link, uint32_t id, uint8_t *bytes, uint16_t size) {
-	SyncLayerCANData *syndData = StaticBuddyHeap.malloc(link->heap,
+	SyncLayerCANData *syncData = StaticBuddyHeap.malloc(link->heap,
 			sizeof(SyncLayerCANData));
 	uint8_t* allocatedBytes = StaticBuddyHeap.malloc(link->heap, size);
 	for (int i = 0; i < size; i++)
 		allocatedBytes[i] = bytes[i];
 
-	syndData->id = id;
-	syndData->bytes = allocatedBytes;
-	syndData->isBytesDynamicallyAllocated = 1;
-	syndData->size = size;
-	syndData->numTry = 3;
-	syndData->track = SYNC_LAYER_CAN_START_REQ;
-	syndData->waitTill = 0xFFFFFFFF;
-	StaticHashMap.insert(link->txMap, id, syndData);
+	syncData->id = id;
+	syncData->bytes = allocatedBytes;
+	syncData->isBytesDynamicallyAllocated = 1;
+	syncData->size = size;
+	syncData->numTry = 3;
+	syncData->track = SYNC_LAYER_CAN_START_REQ;
+	syncData->waitTill = 0xFFFFFFFF;
+	StaticHashMap.insert(link->txMap, id, syncData);
 }
 
 static void addRxMsgPtr(CanLink *link, uint32_t id, uint8_t *bytes,
