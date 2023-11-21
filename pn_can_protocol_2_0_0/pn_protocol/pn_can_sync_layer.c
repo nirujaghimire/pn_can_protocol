@@ -11,7 +11,7 @@
 #include "stdarg.h"
 
 #define TRANSMIT_TIMEOUT 1000
-#define RECEIVE_TIMEOUT 1000
+#define RECEIVE_TIMEOUT  1000
 
 //#define CONSOLE_ENABLE
 
@@ -411,7 +411,7 @@ static int rxReceiveThread(SyncLayerCANLink *link, SyncLayerCANData *data, uint3
 		int bitIndex = frameIndex % 8;
 		data->frameRecords[recordIndex] = data->frameRecords[recordIndex]
 				| (1 << bitIndex);
-		for (int i = 0; i < len - 1; i++)
+		for (int i = 0; i < (len - 1); i++)
 			data->bytes[indexOffset + i] = bytes[i + 1];
 #ifdef CONSOLE_ENABLE
 		console(CONSOLE_INFO, __func__, "DATA>0x%x : %d, ...\n", id, bytes[0]);

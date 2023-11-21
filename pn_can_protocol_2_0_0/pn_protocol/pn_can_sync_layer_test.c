@@ -7,6 +7,10 @@
 #include "main.h"
 #include "pn_can_sync_layer.h"
 
+//#define TEST_ENABLE
+
+#ifdef TEST_ENABLE
+
 SyncLayerCANLink link;
 SyncLayerCANData data;
 
@@ -168,3 +172,5 @@ void runRx() {
 //		HAL_Delay(1000);
 	}
 }
+
+#endif

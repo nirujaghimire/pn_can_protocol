@@ -54,6 +54,9 @@ default.size.stdout \
 OBJDUMP_LIST += \
 pn_can_protocol_2_0_0.list \
 
+OBJCOPY_HEX += \
+pn_can_protocol_2_0_0.hex \
+
 
 # All Target
 all: main-build
@@ -77,12 +80,17 @@ pn_can_protocol_2_0_0.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL
 	@echo 'Finished building: $@'
 	@echo ' '
 
+pn_can_protocol_2_0_0.hex: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-objcopy  -O ihex $(EXECUTABLES) "pn_can_protocol_2_0_0.hex"
+	@echo 'Finished building: $@'
+	@echo ' '
+
 # Other Targets
 clean:
-	-$(RM) default.size.stdout pn_can_protocol_2_0_0.elf pn_can_protocol_2_0_0.list pn_can_protocol_2_0_0.map
+	-$(RM) default.size.stdout pn_can_protocol_2_0_0.elf pn_can_protocol_2_0_0.hex pn_can_protocol_2_0_0.list pn_can_protocol_2_0_0.map
 	-@echo ' '
 
-secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST)
+secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST) $(OBJCOPY_HEX)
 
 fail-specified-linker-script-missing:
 	@echo 'Error: Cannot find the specified linker script. Check the linker settings in the build configuration.'
