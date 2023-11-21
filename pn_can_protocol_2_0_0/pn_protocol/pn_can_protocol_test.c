@@ -5,206 +5,13 @@
  *      Author: NIRUJA
  */
 #include "main.h"
-#include "pn_can_sync_layer.h"
-#include "hash_map.h"
-#include "buddy_heap.h"
-#include "CAN_queue.h"
-#include "stdlib.h"
+#include "pn_can_protocol.h"
 
 #define TEST_ENABLE
-#define TX_ENABLE
+//#define TX_ENABLE
 
 #ifdef TEST_ENABLE
-
-typedef struct {
-	SyncLayerCANLink link;
-	int (*txCallback)(uint32_t id, uint8_t *bytes, uint16_t size, int status);
-	int (*rxCallback)(uint32_t id, uint8_t *bytes, uint16_t size, int status);
-	BuddyHeap *heap;
-	HashMap *txMap;
-	HashMap *rxMap;
-	CANQueue txCanQueue;
-	CANQueue rxCanQueue;
-} CanLink;
-
-static CanLink link[10];
-static int linkCount = 0;
-
-static CanLink* newLink(uint32_t startReqID, uint32_t startAckID,
-		uint32_t endReqID, uint32_t endAckID,
-		int (*canSend)(uint32_t id, uint8_t *bytes, uint8_t len),
-		int (*txCallback)(uint32_t id, uint8_t *bytes, uint16_t size,
-				int status),
-		int (*rxCallback)(uint32_t id, uint8_t *bytes, uint16_t size,
-				int status), BuddyHeap *heap) {
-
-	int n = linkCount++;
-
-	SyncLayerCANLink syncLink = { .startReqID = startReqID, .startAckID =
-			startAckID, .endReqID = endReqID, .endAckID = endAckID, .canSend =
-			canSend };
-	link[n].link = syncLink;
-	link[n].txCallback = txCallback;
-	link[n].rxCallback = rxCallback;
-	link[n].heap = heap;
-	link[n].txMap = StaticHashMap.new(heap);
-	link[n].rxMap = StaticHashMap.new(heap);
-	link[n].txCanQueue = StaticCANQueue.new();
-	link[n].rxCanQueue = StaticCANQueue.new();
-	return &link[n];
-}
-
-static void addTxMsgPtr(CanLink *link, uint32_t id, uint8_t *bytes,
-		uint16_t size) {
-	SyncLayerCANData *syncData = StaticBuddyHeap.malloc(link->heap,
-			sizeof(SyncLayerCANData));
-	syncData->id = id;
-	syncData->bytes = bytes;
-	syncData->isBytesDynamicallyAllocated = 0;
-	syncData->size = size;
-	syncData->numTry = 3;
-	syncData->track = SYNC_LAYER_CAN_START_REQ;
-	syncData->waitTill = 0xFFFFFFFF;
-	StaticHashMap.insert(link->txMap, id, syncData);
-}
-
-static void addTxMsg(CanLink *link, uint32_t id, uint8_t *bytes, uint16_t size) {
-	SyncLayerCANData *syncData = StaticBuddyHeap.malloc(link->heap,
-			sizeof(SyncLayerCANData));
-	uint8_t* allocatedBytes = StaticBuddyHeap.malloc(link->heap, size);
-	for (int i = 0; i < size; i++)
-		allocatedBytes[i] = bytes[i];
-
-	syncData->id = id;
-	syncData->bytes = allocatedBytes;
-	syncData->isBytesDynamicallyAllocated = 1;
-	syncData->size = size;
-	syncData->numTry = 3;
-	syncData->track = SYNC_LAYER_CAN_START_REQ;
-	syncData->waitTill = 0xFFFFFFFF;
-	StaticHashMap.insert(link->txMap, id, syncData);
-}
-
-static void addRxMsgPtr(CanLink *link, uint32_t id, uint8_t *bytes,
-		uint16_t size) {;
-	SyncLayerCANData* syncData = StaticBuddyHeap.malloc(link->heap, sizeof(SyncLayerCANData));
-	syncData->id = id;
-	syncData->size = size;
-	syncData->bytes = bytes;
-	syncData->isBytesDynamicallyAllocated = 0;
-	StaticHashMap.insert(link->rxMap, id, syncData);
-}
-
-static void txThread(CanLink *link) {
-	//Send thread
-	int keyLen;
-	int key[link->txMap->size];
-	StaticHashMap.getKeys(link->txMap, key, &keyLen);
-	for (int i = 0; i < keyLen; i++) {
-		SyncLayerCANData *syncData = StaticHashMap.get(link->txMap, key[i]);
-		StaticSyncLayerCan.txSendThread(&link->link, syncData);
-
-		int status = 0;
-		if (syncData->track == SYNC_LAYER_CAN_TRANSMIT_SUCCESS)
-			status = link->txCallback(syncData->id, syncData->bytes,
-					syncData->size, 1);
-		else if (syncData->track == SYNC_LAYER_CAN_TRANSMIT_FAILED)
-			status = link->txCallback(syncData->id, syncData->bytes,
-					syncData->size, 0);
-		if (status) {
-			if (syncData->isBytesDynamicallyAllocated)
-				StaticBuddyHeap.free(link->heap, syncData->bytes);
-			StaticBuddyHeap.free(link->heap, syncData);
-			StaticHashMap.delete(link->txMap,key[i]);
-		}
-	}
-	// Receive thread
-	CANData canData = StaticCANQueue.dequeue(&link->txCanQueue);
-	if (canData.ID != CAN_DATA_NULL.ID) {
-		uint32_t dataID = canData.ID;
-		if (canData.ID == link->link.startAckID
-				|| canData.ID == link->link.endAckID) {
-			dataID = *(uint32_t*) canData.byte;
-			SyncLayerCANData *syncData = StaticHashMap.get(link->txMap, dataID);
-			StaticSyncLayerCan.txReceiveThread(&link->link, syncData,
-					canData.ID, canData.byte, canData.len);
-		}
-	}
-
-}
-
-static void rxThread(CanLink *link) {
-	//Send thread
-	int keyLen;
-	int key[link->rxMap->size];
-	StaticHashMap.getKeys(link->rxMap, key, &keyLen);
-	for (int i = 0; i < keyLen; i++) {
-		SyncLayerCANData *syncData = StaticHashMap.get(link->rxMap, key[i]);
-		StaticSyncLayerCan.rxSendThread(&link->link, syncData);
-
-		int status = 0;
-		if (syncData->track == SYNC_LAYER_CAN_RECEIVE_SUCCESS)
-			status = link->rxCallback(syncData->id, syncData->bytes,syncData->size, 1);
-		else if (syncData->track == SYNC_LAYER_CAN_RECEIVE_FAILED)
-			status = link->rxCallback(syncData->id, syncData->bytes,syncData->size, 0);
-
-		if (status) {
-			if (syncData->isBytesDynamicallyAllocated)
-				StaticBuddyHeap.free(link->heap, syncData->bytes);
-			StaticBuddyHeap.free(link->heap, syncData);
-			StaticHashMap.delete(link->rxMap,key[i]);
-		}
-	}
-
-	// Receive thread
-	CANData canData = StaticCANQueue.dequeue(&link->rxCanQueue);
-	if (canData.ID != CAN_DATA_NULL.ID) {
-		uint32_t dataID = canData.ID;
-		SyncLayerCANData *syncData;
-		if (canData.ID == link->link.startReqID) {
-			dataID = *(uint32_t*) canData.byte;
-			uint16_t size = *(uint16_t*) (&canData.byte[4]);
-			if(!StaticHashMap.isKeyExist(link->rxMap,dataID)){
-				syncData = StaticBuddyHeap.malloc(link->heap,
-					sizeof(SyncLayerCANData));
-				syncData->isBytesDynamicallyAllocated = 1;
-			}
-			syncData->id = dataID;
-			syncData->size = size;
-			syncData->bytes = StaticBuddyHeap.malloc(link->heap, size);
-			syncData->track = SYNC_LAYER_CAN_START_REQ;
-			syncData->waitTill = 0xFFFFFFFF;
-			StaticHashMap.insert(link->rxMap, dataID, syncData);
-		} else {
-			if (canData.ID == link->link.endReqID)
-				dataID = *(uint32_t*) canData.byte;
-			syncData = StaticHashMap.get(link->rxMap, dataID);
-		}
-		if (syncData != NULL)
-			StaticSyncLayerCan.rxReceiveThread(&link->link, syncData,
-					canData.ID, canData.byte, canData.len);
-	}
-
-}
-
-static void thread(CanLink *link) {
-	txThread(link);
-	rxThread(link);
-}
-
-static void canReceive(CanLink *link, uint32_t id, uint8_t *bytes, uint16_t len) {
-	if (id == link->link.startAckID || id == link->link.endAckID) {
-		StaticCANQueue.enqueue(&link->txCanQueue, id, bytes, len);
-	} else if (id == link->link.startReqID || id == link->link.endReqID) {
-		StaticCANQueue.enqueue(&link->rxCanQueue, id, bytes, len);
-	} else {
-		if (StaticHashMap.isKeyExist(link->rxMap, id))
-			StaticCANQueue.enqueue(&link->rxCanQueue, id, bytes, len);
-	}
-}
-
-////////////////////////////////////////
-static CanLink *canLink;
+CANLink *canLink;
 
 extern CAN_HandleTypeDef hcan;
 static void canInit() {
@@ -239,7 +46,7 @@ void canInterrupt() {
 //	for (int i = 0; i < rx_header.DLC; ++i)
 //		printf("%d ", bytes[i]);
 //	printf("\n");
-	canReceive(canLink, rx_header.ExtId, bytes, rx_header.DLC);
+	StaticCANLink.canReceive(canLink, rx_header.ExtId, bytes, rx_header.DLC);
 }
 
 static CAN_TxHeaderTypeDef tx_header;
@@ -294,16 +101,15 @@ void run() {
 	HAL_Delay(1000);
 
 	BuddyHeap heap = StaticBuddyHeap.new(buffer,sizeof(buffer),8);
-	canLink = newLink(0x1, 0x2, 0x3, 0x4, canSend, txCallback, rxCallback, &heap);
-	addTxMsgPtr(canLink, 0xA, dataBytes, sizeof(dataBytes));
+	canLink = newLink(0x1, 0x2, 0x3, 0x4, canSend, txCallback, rxCallback, &heap,0);
 
 	uint32_t prevMillis = HAL_GetTick();
 	while (1) {
 		if((HAL_GetTick()-prevMillis)>10){
-			addTxMsg(canLink, 0xA, dataBytes, sizeof(dataBytes));
+			StaticCANLink.addTxMsg(canLink, 0xA, dataBytes, sizeof(dataBytes));
 			prevMillis = HAL_GetTick();
 		}
-		thread(canLink);
+		StaticCANLink.thread(canLink);
 //		HAL_Delay(100);
 	}
 }
@@ -317,17 +123,17 @@ void run() {
 	HAL_Delay(1000);
 
 	BuddyHeap heap = StaticBuddyHeap.new(buffer, sizeof(buffer), 8);
-	canLink = newLink(0x1, 0x2, 0x3, 0x4, canSend, txCallback, rxCallback,
-			&heap);
+	canLink = StaticCANLink.newLink(0x1, 0x2, 0x3, 0x4, canSend, txCallback,
+			rxCallback, &heap, 0);
 
-	uint32_t prevMillis = HAL_GetTick();
+//	uint32_t prevMillis = HAL_GetTick();
 	while (1) {
 //		if((HAL_GetTick()-prevMillis)>10000){
-//			addTxMsg(canLink, 0xA1, dataBytes, sizeof(dataBytes));
+//			StaticCANLink.addTxMsg(canLink, 0xA1, dataBytes, sizeof(dataBytes));
 //			prevMillis = HAL_GetTick();
 //		}
 
-		thread(canLink);
+		StaticCANLink.thread(canLink);
 //		HAL_Delay(100);
 	}
 }

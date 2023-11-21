@@ -1,0 +1,8 @@
+pn_can_protocol.c:26:17:newLink	2
+pn_can_protocol.c:59:13:addTxMsgPtr	2
+pn_can_protocol.c:84:13:addTxMsg	3
+pn_can_protocol.c:111:13:addRxMsgPtr	1
+pn_can_protocol.c:122:13:txThread	17
+pn_can_protocol.c:193:13:rxThread	11
+pn_can_protocol.c:253:13:thread	1
+pn_can_protocol.c:264:13:canReceive	6

@@ -1,0 +1,8 @@
+../pn_protocol/pn_can_protocol.c:26:17:newLink	552	static
+../pn_protocol/pn_can_protocol.c:59:13:addTxMsgPtr	32	static
+../pn_protocol/pn_can_protocol.c:84:13:addTxMsg	40	static
+../pn_protocol/pn_can_protocol.c:111:13:addRxMsgPtr	32	static
+../pn_protocol/pn_can_protocol.c:122:13:txThread	128	dynamic
+../pn_protocol/pn_can_protocol.c:193:13:rxThread	104	dynamic
+../pn_protocol/pn_can_protocol.c:253:13:thread	16	static
+../pn_protocol/pn_can_protocol.c:264:13:canReceive	32	static
