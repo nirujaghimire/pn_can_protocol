@@ -89,28 +89,36 @@ int rxCallback(uint32_t id, uint8_t *bytes, uint16_t size, int status) {
 	return 1;
 }
 
-uint8_t dataBytes[16];
-uint8_t buffer[1024 + mapSize(1024, 8)];
+uint8_t dataBytes1[20];
+uint8_t dataBytes2[40];
+uint8_t dataBytes3[60];
+uint8_t buffer[4096 + mapSize(4096, 8)];
 #ifdef TX_ENABLE
 void run() {
 	canInit();
-	for (int i = 0; i < sizeof(dataBytes); i++)
-		dataBytes[i] = i;
+	for (int i = 0; i < sizeof(dataBytes1); i++)
+		dataBytes1[i] = i;
+	for (int i = 0; i < sizeof(dataBytes2); i++)
+		dataBytes2[i] = i;
+	for (int i = 0; i < sizeof(dataBytes3); i++)
+		dataBytes3[i] = i;
 
 	printf("----------------------TX INITIATING-----------------------\n");
 	HAL_Delay(1000);
 
 	BuddyHeap heap = StaticBuddyHeap.new(buffer,sizeof(buffer),8);
-	canLink = StaticCANLink.new(0x1, 0x2, 0x3, 0x4, canSend, txCallback, rxCallback, &heap,1);
+	canLink = StaticCANLink.new(0x1, 0x2, 0x3, 0x4, canSend, txCallback, rxCallback, &heap,0);
 
 	uint32_t prevMillis = HAL_GetTick();
 	while (1) {
-		if((HAL_GetTick()-prevMillis)>10){
-			StaticCANLink.addTxMsg(canLink, 0xA, dataBytes, sizeof(dataBytes));
+		if((HAL_GetTick()-prevMillis)>100){
+			StaticCANLink.addTxMsgPtr(canLink, 0xA, dataBytes1, sizeof(dataBytes1));
+			StaticCANLink.addTxMsgPtr(canLink, 0xB, dataBytes2, sizeof(dataBytes2));
+			StaticCANLink.addTxMsgPtr(canLink, 0xC, dataBytes3, sizeof(dataBytes3));
 			prevMillis = HAL_GetTick();
 		}
 		StaticCANLink.thread(canLink);
-//		HAL_Delay(100);
+//		HAL_Delay(1000);
 	}
 }
 #else
