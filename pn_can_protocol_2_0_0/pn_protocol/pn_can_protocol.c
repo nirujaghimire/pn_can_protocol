@@ -143,7 +143,6 @@ static SyncLayerCANData* getDataFromQueue(Queue *queue, uint32_t ID) {
 	}
 	return NULL;
 }
-
 /**
  * This adds message to be transmitted without dynamic memory allocation
  * @param link	: Pointer to instance of CAN link
@@ -506,8 +505,7 @@ static void rxThread(CANLink *link) {
 		if (canData.ID == link->link.startReqID) {
 			dataID = *(uint32_t*) canData.byte;
 			uint16_t size = *(uint16_t*) (&canData.byte[4]);
-			syncData = StaticHashMap.get(link->rxMap, dataID);
-			if (syncData == NULL) {
+			if (!StaticHashMap.isKeyExist(link->rxMap, dataID)) {
 				syncData = StaticBuddyHeap.malloc(link->heap,
 						sizeof(SyncLayerCANData));
 				if (syncData == NULL) {
@@ -525,27 +523,28 @@ static void rxThread(CANLink *link) {
 							dataID);
 #endif
 				syncData->isBytesDynamicallyAllocated = 1;
-			}
-			syncData->id = dataID;
-			syncData->size = size;
-			syncData->bytes = StaticBuddyHeap.malloc(link->heap, size);
-			if (syncData->bytes == NULL) {
+				syncData->id = dataID;
+				syncData->size = size;
+				syncData->bytes = StaticBuddyHeap.malloc(link->heap, size);
+				if (syncData->bytes == NULL) {
 #ifdef CONSOLE_ENABLE
-				console(CONSOLE_ERROR, __func__,
-						"Bytes for data 0x%x allocation : FAILED (heap is full)\n",
-						dataID);
+					console(CONSOLE_ERROR, __func__,
+							"Bytes for data 0x%x allocation : FAILED (heap is full)\n",
+							dataID);
 #endif
-				StaticBuddyHeap.free(link->heap, syncData);
-				return;
-			}
+					StaticBuddyHeap.free(link->heap, syncData);
+					return;
+				}
 #ifdef CONSOLE_ENABLE
-			else
-				console(CONSOLE_INFO, __func__,
-						"Bytes for data 0x%x allocation : SUCCESS\n", dataID);
+				else
+					console(CONSOLE_INFO, __func__,
+							"Bytes for data 0x%x allocation : SUCCESS\n",
+							dataID);
 #endif
-			syncData->track = SYNC_LAYER_CAN_START_REQ;
-			syncData->waitTill = 0xFFFFFFFF;
-			StaticHashMap.insert(link->rxMap, dataID, syncData);
+				syncData->track = SYNC_LAYER_CAN_START_REQ;
+				syncData->waitTill = 0xFFFFFFFF;
+				StaticHashMap.insert(link->rxMap, dataID, syncData);
+			}
 		} else {
 			if (canData.ID == link->link.endReqID)
 				dataID = *(uint32_t*) canData.byte;

@@ -1,9 +1,9 @@
 pn_can_protocol.c:54:17:new	6
 pn_can_protocol.c:132:26:getDataFromQueue	4
-pn_can_protocol.c:154:13:addTxMsgPtr	10
-pn_can_protocol.c:240:13:addTxMsg	13
-pn_can_protocol.c:354:13:addRxMsgPtr	6
-pn_can_protocol.c:401:13:txThread	20
-pn_can_protocol.c:476:13:rxThread	13
-pn_can_protocol.c:565:13:thread	1
-pn_can_protocol.c:576:13:canReceive	6
+pn_can_protocol.c:153:13:addTxMsgPtr	10
+pn_can_protocol.c:239:13:addTxMsg	13
+pn_can_protocol.c:353:13:addRxMsgPtr	6
+pn_can_protocol.c:400:13:txThread	20
+pn_can_protocol.c:475:13:rxThread	13
+pn_can_protocol.c:564:13:thread	1
+pn_can_protocol.c:575:13:canReceive	6
