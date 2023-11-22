@@ -1,6 +1,6 @@
-pn_can_protocol_test.c:17:13:canInit	4
-pn_can_protocol_test.c:43:6:canInterrupt	1
-pn_can_protocol_test.c:54:12:canSend	1
-pn_can_protocol_test.c:68:5:txCallback	3
-pn_can_protocol_test.c:80:5:rxCallback	3
-pn_can_protocol_test.c:97:6:run	5
+pn_can_protocol_test.c:18:13:canInit	4
+pn_can_protocol_test.c:44:6:canInterrupt	1
+pn_can_protocol_test.c:56:12:canSend	1
+pn_can_protocol_test.c:70:5:txCallback	3
+pn_can_protocol_test.c:82:5:rxCallback	3
+pn_can_protocol_test.c:100:6:run	5
