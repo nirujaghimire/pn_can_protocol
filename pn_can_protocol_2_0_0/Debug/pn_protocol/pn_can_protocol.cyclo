@@ -1,4 +1,3 @@
-pn_can_protocol.c:18:13:console	4
 pn_can_protocol.c:52:17:new	6
 pn_can_protocol.c:136:13:addTxMsgPtr	6
 pn_can_protocol.c:202:13:addTxMsg	7
