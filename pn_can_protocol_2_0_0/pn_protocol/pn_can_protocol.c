@@ -564,6 +564,7 @@ static void canReceive(CANLink *link, uint32_t id, uint8_t *bytes, uint16_t len)
 		if (StaticHashMap.isKeyExist(link->rxMap, id))
 			StaticCANQueue.enqueue(&link->rxCanQueue, id, bytes, len);
 	}
+
 }
 
 struct CANLinkControl StaticCANLink = { .addRxMsgPtr = addRxMsgPtr, .addTxMsg =
