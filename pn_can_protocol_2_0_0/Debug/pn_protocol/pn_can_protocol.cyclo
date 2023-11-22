@@ -1,8 +1,8 @@
-pn_can_protocol.c:52:17:new	6
-pn_can_protocol.c:136:13:addTxMsgPtr	6
-pn_can_protocol.c:202:13:addTxMsg	7
-pn_can_protocol.c:282:13:addRxMsgPtr	3
-pn_can_protocol.c:316:13:txThread	20
-pn_can_protocol.c:391:13:rxThread	13
-pn_can_protocol.c:476:13:thread	1
-pn_can_protocol.c:487:13:canReceive	6
+pn_can_protocol.c:54:17:new	6
+pn_can_protocol.c:139:13:addTxMsgPtr	9
+pn_can_protocol.c:221:13:addTxMsg	12
+pn_can_protocol.c:331:13:addRxMsgPtr	7
+pn_can_protocol.c:384:13:txThread	20
+pn_can_protocol.c:459:13:rxThread	13
+pn_can_protocol.c:547:13:thread	1
+pn_can_protocol.c:558:13:canReceive	6
