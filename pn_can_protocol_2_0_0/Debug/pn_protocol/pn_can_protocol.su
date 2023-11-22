@@ -1,8 +1,9 @@
 ../pn_protocol/pn_can_protocol.c:54:17:new	552	static
-../pn_protocol/pn_can_protocol.c:139:13:addTxMsgPtr	40	static
-../pn_protocol/pn_can_protocol.c:221:13:addTxMsg	48	static
-../pn_protocol/pn_can_protocol.c:331:13:addRxMsgPtr	40	static
-../pn_protocol/pn_can_protocol.c:384:13:txThread	128	dynamic
-../pn_protocol/pn_can_protocol.c:459:13:rxThread	104	dynamic
-../pn_protocol/pn_can_protocol.c:547:13:thread	16	static
-../pn_protocol/pn_can_protocol.c:558:13:canReceive	32	static
+../pn_protocol/pn_can_protocol.c:132:26:getDataFromQueue	32	static
+../pn_protocol/pn_can_protocol.c:154:13:addTxMsgPtr	40	static
+../pn_protocol/pn_can_protocol.c:240:13:addTxMsg	48	static
+../pn_protocol/pn_can_protocol.c:354:13:addRxMsgPtr	40	static
+../pn_protocol/pn_can_protocol.c:401:13:txThread	128	dynamic
+../pn_protocol/pn_can_protocol.c:476:13:rxThread	104	dynamic
+../pn_protocol/pn_can_protocol.c:565:13:thread	16	static
+../pn_protocol/pn_can_protocol.c:576:13:canReceive	32	static
