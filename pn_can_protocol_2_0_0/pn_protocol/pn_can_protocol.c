@@ -17,6 +17,8 @@ typedef enum {
 } ConsoleStatus;
 static void console(ConsoleStatus status, const char *func_name,
 		const char *msg, ...) {
+//	if(status == CONSOLE_INFO)
+//		return;
 	printf("%s|%s>", TAG, func_name);
 	if (status == CONSOLE_ERROR) {
 		printf("ERROR :");
@@ -69,8 +71,8 @@ static CANLink* new(uint32_t startReqID, uint32_t startAckID, uint32_t endReqID,
 		if (link[n].txQueue == NULL) {
 #ifdef CONSOLE_ENABLE
 			console(CONSOLE_ERROR, __func__,
-					"Link [0x%x, 0x%x, 0x%x, 0x%x] creation : FAILED (Heap is full) \n", startReqID,
-					startAckID, endReqID, endAckID);
+					"Link [0x%x, 0x%x, 0x%x, 0x%x] creation : FAILED (Heap is full) \n",
+					startReqID, startAckID, endReqID, endAckID);
 #endif
 			return NULL;
 		}
@@ -85,8 +87,8 @@ static CANLink* new(uint32_t startReqID, uint32_t startAckID, uint32_t endReqID,
 		if (link[n].txMap == NULL) {
 #ifdef CONSOLE_ENABLE
 			console(CONSOLE_ERROR, __func__,
-					"Transmit Queue for link [0x%x, 0x%x, 0x%x, 0x%x] creation : FAILED (Heap is full) \n", startReqID,
-					startAckID, endReqID, endAckID);
+					"Transmit Queue for link [0x%x, 0x%x, 0x%x, 0x%x] creation : FAILED (Heap is full) \n",
+					startReqID, startAckID, endReqID, endAckID);
 #endif
 			return NULL;
 		}
@@ -101,8 +103,8 @@ static CANLink* new(uint32_t startReqID, uint32_t startAckID, uint32_t endReqID,
 	if (link[n].rxMap == NULL) {
 #ifdef CONSOLE_ENABLE
 		console(CONSOLE_ERROR, __func__,
-				"Receive map for link [0x%x, 0x%x, 0x%x, 0x%x] creation : FAILED (Heap is full) \n", startReqID,
-				startAckID, endReqID, endAckID);
+				"Receive map for link [0x%x, 0x%x, 0x%x, 0x%x] creation : FAILED (Heap is full) \n",
+				startReqID, startAckID, endReqID, endAckID);
 #endif
 		if (isQueue)
 			StaticBuddyHeap.free(heap, link[n].txQueue);
@@ -120,8 +122,9 @@ static CANLink* new(uint32_t startReqID, uint32_t startAckID, uint32_t endReqID,
 	link[n].rxCanQueue = StaticCANQueue.new();
 	link[n].isQueue = isQueue;
 #ifdef CONSOLE_ENABLE
-	console(CONSOLE_INFO, __func__, "Link [0x%x, 0x%x, 0x%x, 0x%x] creation : SUCCESS\n",
-			startReqID, startAckID, endReqID, endAckID);
+	console(CONSOLE_INFO, __func__,
+			"Link [0x%x, 0x%x, 0x%x, 0x%x] creation : SUCCESS\n", startReqID,
+			startAckID, endReqID, endAckID);
 #endif
 	return &link[n];
 }
@@ -137,20 +140,34 @@ static void addTxMsgPtr(CANLink *link, uint32_t id, uint8_t *bytes,
 		uint16_t size) {
 	if (bytes == NULL)
 		return;
-	SyncLayerCANData *syncData = StaticBuddyHeap.malloc(link->heap,
-			sizeof(SyncLayerCANData));
+	SyncLayerCANData *syncData;
+	int isSyncDataAllocated = 0;
+	if (!link->isQueue) {
+		syncData = StaticHashMap.get(link->txMap, id);
+		if (syncData == NULL) {
+			syncData = StaticBuddyHeap.malloc(link->heap,
+					sizeof(SyncLayerCANData));
+			isSyncDataAllocated = 1;
+		}
+	} else {
+		syncData = StaticBuddyHeap.malloc(link->heap, sizeof(SyncLayerCANData));
+		isSyncDataAllocated = 1;
+	}
 	if (syncData == NULL) {
 #ifdef CONSOLE_ENABLE
-		console(CONSOLE_ERROR, __func__, "Sync data for data 0x%x creation : FAILED (Heap is full) \n", id);
+		console(CONSOLE_ERROR, __func__,
+				"Sync data for data 0x%x creation : FAILED (Heap is full) \n",
+				id);
 #endif
 		return;
 	}
 #ifdef CONSOLE_ENABLE
 	else
-		console(CONSOLE_INFO, __func__, "Sync data for data 0x%x allocation in heap : SUCCESS \n",
-				id);
+		console(CONSOLE_INFO, __func__,
+				"Sync data for data 0x%x creation : SUCCESS \n", id);
 #endif
-
+	if (!isSyncDataAllocated)
+		return;
 	syncData->id = id;
 	syncData->bytes = bytes;
 	syncData->isBytesDynamicallyAllocated = 0;
@@ -163,7 +180,8 @@ static void addTxMsgPtr(CANLink *link, uint32_t id, uint8_t *bytes,
 		Queue *queue = StaticQueue.enqueue(link->txQueue, syncData);
 		if (queue == NULL) {
 #ifdef CONSOLE_ENABLE
-			console(CONSOLE_ERROR, __func__, "Data 0x%x insertion in transmit queue : FAILED (Queue is full) \n",
+			console(CONSOLE_ERROR, __func__,
+					"Data 0x%x insertion in transmit queue : FAILED (Queue is full) \n",
 					id);
 #endif
 			StaticBuddyHeap.free(link->heap, syncData);
@@ -178,7 +196,8 @@ static void addTxMsgPtr(CANLink *link, uint32_t id, uint8_t *bytes,
 		HashMap *map = StaticHashMap.insert(link->txMap, id, syncData);
 		if (map == NULL) {
 #ifdef CONSOLE_ENABLE
-			console(CONSOLE_ERROR, __func__, "Data 0x%x insertion in transmit map : FAILED (Map is full) \n",
+			console(CONSOLE_ERROR, __func__,
+					"Data 0x%x insertion in transmit map : FAILED (Map is full) \n",
 					id);
 #endif
 			StaticBuddyHeap.free(link->heap, syncData);
@@ -200,35 +219,63 @@ static void addTxMsgPtr(CANLink *link, uint32_t id, uint8_t *bytes,
  * @param size	: Size in bytes
  */
 static void addTxMsg(CANLink *link, uint32_t id, uint8_t *bytes, uint16_t size) {
-	SyncLayerCANData *syncData = StaticBuddyHeap.malloc(link->heap,
-			sizeof(SyncLayerCANData));
+	if (bytes == NULL)
+		return;
+
+	SyncLayerCANData *syncData;
+	int isSyncDataAllocated = 0;
+	if (!link->isQueue) {
+		syncData = StaticHashMap.get(link->txMap, id);
+		if (syncData == NULL) {
+			syncData = StaticBuddyHeap.malloc(link->heap,
+					sizeof(SyncLayerCANData));
+			isSyncDataAllocated = 1;
+		}
+	} else {
+		syncData = StaticBuddyHeap.malloc(link->heap, sizeof(SyncLayerCANData));
+		isSyncDataAllocated = 1;
+	}
 	if (syncData == NULL) {
 #ifdef CONSOLE_ENABLE
-		console(CONSOLE_ERROR, __func__, "Sync data for data 0x%x creation : FAILED (Heap is full) \n", id);
-#endif
-		return;
-	}
-#ifdef CONSOLE_ENABLE
-	else
-		console(CONSOLE_INFO, __func__, "Sync data for data 0x%x creation : SUCCESS\n",
+		console(CONSOLE_ERROR, __func__,
+				"Sync data for data 0x%x creation : FAILED (Heap is full) \n",
 				id);
 #endif
-	uint8_t *allocatedBytes = StaticBuddyHeap.malloc(link->heap, size);
-
-	if (allocatedBytes == NULL) {
-#ifdef CONSOLE_ENABLE
-		console(CONSOLE_ERROR, __func__, "Bytes for data 0x%x allocation : FAILED (Heap is full) \n", id);
-#endif
-		StaticBuddyHeap.free(link->heap, syncData);
 		return;
 	}
 #ifdef CONSOLE_ENABLE
 	else
 		console(CONSOLE_INFO, __func__,
-				"Bytes for data 0x%x allocation : SUCCESS\n", id);
+				"Sync data for data 0x%x creation : SUCCESS\n", id);
+#endif
+
+	uint8_t *allocatedBytes;
+	if (!isSyncDataAllocated)
+		allocatedBytes = StaticBuddyHeap.malloc(link->heap, size);
+	else
+		allocatedBytes = syncData->bytes;
+
+	if (allocatedBytes == NULL) {
+#ifdef CONSOLE_ENABLE
+		console(CONSOLE_ERROR, __func__,
+				"Bytes for data 0x%x allocation : FAILED (Heap is full) \n",
+				id);
+#endif
+		StaticBuddyHeap.free(link->heap, syncData);
+		return;
+	}
+#ifdef CONSOLE_ENABLE
+	else {
+		if (!isSyncDataAllocated)
+			console(CONSOLE_INFO, __func__,
+					"Bytes for data 0x%x allocation : SUCCESS\n", id);
+	}
 #endif
 	for (int i = 0; i < size; i++)
 		allocatedBytes[i] = bytes[i];
+
+	if (isSyncDataAllocated)
+		return;
 
 	syncData->id = id;
 	syncData->bytes = allocatedBytes;
@@ -241,7 +288,8 @@ static void addTxMsg(CANLink *link, uint32_t id, uint8_t *bytes, uint16_t size) 
 		Queue *queue = StaticQueue.enqueue(link->txQueue, syncData);
 		if (queue == NULL) {
 #ifdef CONSOLE_ENABLE
-			console(CONSOLE_ERROR, __func__, "Data 0x%x insertion in transmit queue : FAILED (Queue is full) \n",
+			console(CONSOLE_ERROR, __func__,
+					"Data 0x%x insertion in transmit queue : FAILED (Queue is full) \n",
 					id);
 #endif
 			StaticBuddyHeap.free(link->heap, allocatedBytes);
@@ -257,7 +305,8 @@ static void addTxMsg(CANLink *link, uint32_t id, uint8_t *bytes, uint16_t size) 
 		HashMap *map = StaticHashMap.insert(link->txMap, id, syncData);
 		if (map == NULL) {
 #ifdef CONSOLE_ENABLE
-			console(CONSOLE_ERROR, __func__, "Data 0x%x insertion in transmit map : FAILED (Map is full) \n",
+			console(CONSOLE_ERROR, __func__,
+					"Data 0x%x insertion in transmit map : FAILED (Map is full) \n",
 					id);
 #endif
 			StaticBuddyHeap.free(link->heap, allocatedBytes);
@@ -281,19 +330,36 @@ static void addTxMsg(CANLink *link, uint32_t id, uint8_t *bytes, uint16_t size) 
  */
 static void addRxMsgPtr(CANLink *link, uint32_t id, uint8_t *bytes,
 		uint16_t size) {
-	SyncLayerCANData *syncData = StaticBuddyHeap.malloc(link->heap,
-			sizeof(SyncLayerCANData));
+	if (bytes == NULL)
+		return;
+	SyncLayerCANData *syncData;
+	int isSyncDataAllocated = 0;
+	if (!link->isQueue) {
+		syncData = StaticHashMap.get(link->txMap, id);
+		if (syncData == NULL) {
+			syncData = StaticBuddyHeap.malloc(link->heap,
+					sizeof(SyncLayerCANData));
+			isSyncDataAllocated = 1;
+		}
+	} else {
+		syncData = StaticBuddyHeap.malloc(link->heap, sizeof(SyncLayerCANData));
+		isSyncDataAllocated = 1;
+	}
 	if (syncData == NULL) {
 #ifdef CONSOLE_ENABLE
-		console(CONSOLE_ERROR, __func__, "Sync data for data 0x%x creation : FAILED (Heap is full) \n", id);
+		console(CONSOLE_ERROR, __func__,
+				"Sync data for data 0x%x creation : FAILED (Heap is full) \n",
+				id);
 #endif
 		return;
 	}
 #ifdef CONSOLE_ENABLE
 	else
-		console(CONSOLE_INFO, __func__, "Sync data for data 0x%x creation : SUCCESS \n",
-				id);
+		console(CONSOLE_INFO, __func__,
+				"Sync data for data 0x%x creation : SUCCESS \n", id);
 #endif
+	if(!isSyncDataAllocated)
+		return;
 	syncData->id = id;
 	syncData->size = size;
 	syncData->bytes = bytes;
@@ -301,7 +367,9 @@ static void addRxMsgPtr(CANLink *link, uint32_t id, uint8_t *bytes,
 	HashMap *map = StaticHashMap.insert(link->rxMap, id, syncData);
 	if (map == NULL) {
 #ifdef CONSOLE_ENABLE
-		console(CONSOLE_ERROR, __func__, "Data 0x%x insertion in receive map : FAILED (Map is full) \n", id);
+		console(CONSOLE_ERROR, __func__,
+				"Data 0x%x insertion in receive map : FAILED (Map is full) \n",
+				id);
 #endif
 		StaticBuddyHeap.free(link->heap, syncData);
 		return;
@@ -426,7 +494,8 @@ static void rxThread(CANLink *link) {
 						sizeof(SyncLayerCANData));
 				if (syncData == NULL) {
 #ifdef CONSOLE_ENABLE
-					console(CONSOLE_ERROR, __func__, "Sync data for data 0x%x creation : FAILED (heap is full)\n",
+					console(CONSOLE_ERROR, __func__,
+							"Sync data for data 0x%x creation : FAILED (heap is full)\n",
 							dataID);
 #endif
 					return;
@@ -434,7 +503,8 @@ static void rxThread(CANLink *link) {
 #ifdef CONSOLE_ENABLE
 				else
 					console(CONSOLE_INFO, __func__,
-							"Sync data for data 0x%x creation : SUCCESS\n", dataID);
+							"Sync data for data 0x%x creation : SUCCESS\n",
+							dataID);
 #endif
 				syncData->isBytesDynamicallyAllocated = 1;
 			}
@@ -443,7 +513,8 @@ static void rxThread(CANLink *link) {
 			syncData->bytes = StaticBuddyHeap.malloc(link->heap, size);
 			if (syncData->bytes == NULL) {
 #ifdef CONSOLE_ENABLE
-				console(CONSOLE_ERROR, __func__, "Bytes for data 0x%x allocation : FAILED (heap is full)\n",
+				console(CONSOLE_ERROR, __func__,
+						"Bytes for data 0x%x allocation : FAILED (heap is full)\n",
 						dataID);
 #endif
 				StaticBuddyHeap.free(link->heap, syncData);
