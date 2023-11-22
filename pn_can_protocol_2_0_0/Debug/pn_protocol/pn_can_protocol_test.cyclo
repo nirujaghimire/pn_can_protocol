@@ -3,4 +3,4 @@ pn_can_protocol_test.c:43:6:canInterrupt	1
 pn_can_protocol_test.c:54:12:canSend	1
 pn_can_protocol_test.c:68:5:txCallback	3
 pn_can_protocol_test.c:80:5:rxCallback	3
-pn_can_protocol_test.c:117:6:run	2
+pn_can_protocol_test.c:126:6:run	5
