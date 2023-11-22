@@ -129,6 +129,21 @@ static CANLink* new(uint32_t startReqID, uint32_t startAckID, uint32_t endReqID,
 	return &link[n];
 }
 
+static SyncLayerCANData* getDataFromQueue(Queue *queue, uint32_t ID) {
+	int que_size = queue->size;
+	struct QueueData *queData = queue->front;
+	SyncLayerCANData *syncData;
+	for (int i = 0; i < que_size; i++) {
+		syncData = (SyncLayerCANData*) queData->value;
+		if (syncData->id == ID)
+			return syncData;
+		queData = queData->next;
+		if (queData == NULL)
+			break;
+	}
+	return NULL;
+}
+
 /**
  * This adds message to be transmitted without dynamic memory allocation
  * @param link	: Pointer to instance of CAN link
@@ -150,8 +165,12 @@ static void addTxMsgPtr(CANLink *link, uint32_t id, uint8_t *bytes,
 			isSyncDataAllocated = 1;
 		}
 	} else {
-		syncData = StaticBuddyHeap.malloc(link->heap, sizeof(SyncLayerCANData));
-		isSyncDataAllocated = 1;
+		syncData = getDataFromQueue(link->txQueue, id);
+		if (syncData == NULL) {
+			syncData = StaticBuddyHeap.malloc(link->heap,
+					sizeof(SyncLayerCANData));
+			isSyncDataAllocated = 1;
+		}
 	}
 	if (syncData == NULL) {
 #ifdef CONSOLE_ENABLE
@@ -232,8 +251,12 @@ static void addTxMsg(CANLink *link, uint32_t id, uint8_t *bytes, uint16_t size) 
 			isSyncDataAllocated = 1;
 		}
 	} else {
-		syncData = StaticBuddyHeap.malloc(link->heap, sizeof(SyncLayerCANData));
-		isSyncDataAllocated = 1;
+		syncData = getDataFromQueue(link->txQueue, id);
+		if (syncData == NULL) {
+			syncData = StaticBuddyHeap.malloc(link->heap,
+					sizeof(SyncLayerCANData));
+			isSyncDataAllocated = 1;
+		}
 	}
 	if (syncData == NULL) {
 #ifdef CONSOLE_ENABLE
@@ -334,14 +357,8 @@ static void addRxMsgPtr(CANLink *link, uint32_t id, uint8_t *bytes,
 		return;
 	SyncLayerCANData *syncData;
 	int isSyncDataAllocated = 0;
-	if (!link->isQueue) {
-		syncData = StaticHashMap.get(link->txMap, id);
-		if (syncData == NULL) {
-			syncData = StaticBuddyHeap.malloc(link->heap,
-					sizeof(SyncLayerCANData));
-			isSyncDataAllocated = 1;
-		}
-	} else {
+	syncData = StaticHashMap.get(link->rxMap, id);
+	if (syncData == NULL) {
 		syncData = StaticBuddyHeap.malloc(link->heap, sizeof(SyncLayerCANData));
 		isSyncDataAllocated = 1;
 	}
@@ -358,7 +375,7 @@ static void addRxMsgPtr(CANLink *link, uint32_t id, uint8_t *bytes,
 		console(CONSOLE_INFO, __func__,
 				"Sync data for data 0x%x creation : SUCCESS \n", id);
 #endif
-	if(!isSyncDataAllocated)
+	if (!isSyncDataAllocated)
 		return;
 	syncData->id = id;
 	syncData->size = size;
@@ -489,7 +506,8 @@ static void rxThread(CANLink *link) {
 		if (canData.ID == link->link.startReqID) {
 			dataID = *(uint32_t*) canData.byte;
 			uint16_t size = *(uint16_t*) (&canData.byte[4]);
-			if (!StaticHashMap.isKeyExist(link->rxMap, dataID)) {
+			syncData = StaticHashMap.get(link->rxMap, dataID);
+			if (syncData == NULL) {
 				syncData = StaticBuddyHeap.malloc(link->heap,
 						sizeof(SyncLayerCANData));
 				if (syncData == NULL) {

@@ -8,7 +8,7 @@
 #include "pn_can_protocol.h"
 
 #define TEST_ENABLE
-#define TX_ENABLE
+//#define TX_ENABLE
 
 #ifdef TEST_ENABLE
 CANLink *canLink1;
