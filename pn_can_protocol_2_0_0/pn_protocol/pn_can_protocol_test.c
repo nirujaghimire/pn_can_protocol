@@ -8,7 +8,7 @@
 #include "pn_can_protocol.h"
 
 #define TEST_ENABLE
-//#define TX_ENABLE
+#define TX_ENABLE
 
 #ifdef TEST_ENABLE
 CANLink *canLink;
@@ -101,7 +101,7 @@ void run() {
 	HAL_Delay(1000);
 
 	BuddyHeap heap = StaticBuddyHeap.new(buffer,sizeof(buffer),8);
-	canLink = newLink(0x1, 0x2, 0x3, 0x4, canSend, txCallback, rxCallback, &heap,0);
+	canLink = StaticCANLink.new(0x1, 0x2, 0x3, 0x4, canSend, txCallback, rxCallback, &heap,1);
 
 	uint32_t prevMillis = HAL_GetTick();
 	while (1) {
@@ -123,7 +123,7 @@ void run() {
 	HAL_Delay(1000);
 
 	BuddyHeap heap = StaticBuddyHeap.new(buffer, sizeof(buffer), 8);
-	canLink = StaticCANLink.newLink(0x1, 0x2, 0x3, 0x4, canSend, txCallback,
+	canLink = StaticCANLink.new(0x1, 0x2, 0x3, 0x4, canSend, txCallback,
 			rxCallback, &heap, 0);
 
 //	uint32_t prevMillis = HAL_GetTick();
