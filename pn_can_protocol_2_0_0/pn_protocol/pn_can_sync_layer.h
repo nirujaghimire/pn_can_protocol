@@ -9,6 +9,10 @@
 #define PN_CAN_SYNC_LAYER_H_
 #include "stdint.h"
 
+#define TRANSMIT_TIMEOUT 1000
+#define RECEIVE_TIMEOUT  1000
+
+
 typedef enum {
 	SYNC_LAYER_CAN_START_REQ,
 	SYNC_LAYER_CAN_START_ACK,

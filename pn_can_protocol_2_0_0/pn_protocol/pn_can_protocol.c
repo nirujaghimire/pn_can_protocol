@@ -7,6 +7,7 @@
 #include "pn_can_protocol.h"
 #include "stdarg.h"
 #include "stdio.h"
+#include "main.h"
 
 //#define CONSOLE_ENABLE
 
@@ -38,6 +39,10 @@ static void console(ConsoleStatus status, const char *func_name,
 
 static CANLink link[10];
 static int linkCount = 0;
+
+static uint32_t getMillis() {
+	return HAL_GetTick();
+}
 
 /**
  * This will add new link
@@ -192,7 +197,7 @@ static void addTxMsgPtr(CANLink *link, uint32_t id, uint8_t *bytes,
 	syncData->size = size;
 	syncData->numTry = PN_CAN_PROTOCOL_NUM_OF_TRY;
 	syncData->track = SYNC_LAYER_CAN_START_REQ;
-	syncData->waitTill = 0;//b0xFFFFFFFF;
+	syncData->waitTill = getMillis()+TRANSMIT_TIMEOUT;//b0xFFFFFFFF;
 
 	if (link->isQueue) {
 		Queue *queue = StaticQueue.enqueue(link->txQueue, syncData);
@@ -305,7 +310,7 @@ static void addTxMsg(CANLink *link, uint32_t id, uint8_t *bytes, uint16_t size) 
 	syncData->size = size;
 	syncData->numTry = PN_CAN_PROTOCOL_NUM_OF_TRY;
 	syncData->track = SYNC_LAYER_CAN_START_REQ;
-	syncData->waitTill = 0xFFFFFFFF;
+	syncData->waitTill = getMillis()+TRANSMIT_TIMEOUT;
 	if (link->isQueue) {
 		Queue *queue = StaticQueue.enqueue(link->txQueue, syncData);
 		if (queue == NULL) {
@@ -379,6 +384,7 @@ static void addRxMsgPtr(CANLink *link, uint32_t id, uint8_t *bytes,
 	syncData->id = id;
 	syncData->size = size;
 	syncData->bytes = bytes;
+	syncData->waitTill = getMillis()+RECEIVE_TIMEOUT;
 	syncData->isBytesDynamicallyAllocated = 0;
 	HashMap *map = StaticHashMap.insert(link->rxMap, id, syncData);
 	if (map == NULL) {
@@ -542,7 +548,7 @@ static void rxThread(CANLink *link) {
 							dataID);
 #endif
 				syncData->track = SYNC_LAYER_CAN_START_REQ;
-				syncData->waitTill = 0xFFFFFFFF;
+				syncData->waitTill = getMillis()+RECEIVE_TIMEOUT;
 				StaticHashMap.insert(link->rxMap, dataID, syncData);
 			}
 		} else {
