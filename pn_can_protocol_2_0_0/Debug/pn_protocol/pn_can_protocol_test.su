@@ -3,4 +3,4 @@
 ../pn_protocol/pn_can_protocol_test.c:56:12:canSend	24	static
 ../pn_protocol/pn_can_protocol_test.c:70:5:txCallback	32	static
 ../pn_protocol/pn_can_protocol_test.c:82:5:rxCallback	32	static
-../pn_protocol/pn_can_protocol_test.c:141:6:run	88	static
+../pn_protocol/pn_can_protocol_test.c:141:6:run	112	static
