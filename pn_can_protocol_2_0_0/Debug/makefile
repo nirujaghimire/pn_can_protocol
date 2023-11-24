@@ -65,8 +65,8 @@ all: main-build
 main-build: pn_can_protocol_2_0_0.elf secondary-outputs
 
 # Tool invocations
-pn_can_protocol_2_0_0.elf pn_can_protocol_2_0_0.map: $(OBJS) $(USER_OBJS) C:\Users\peter\OneDrive\Desktop\Github\pn_can_protocol\pn_can_protocol_2_0_0\STM32F103C8TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "pn_can_protocol_2_0_0.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"C:\Users\peter\OneDrive\Desktop\Github\pn_can_protocol\pn_can_protocol_2_0_0\STM32F103C8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="pn_can_protocol_2_0_0.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+pn_can_protocol_2_0_0.elf pn_can_protocol_2_0_0.map: $(OBJS) $(USER_OBJS) C:\Users\NIRUJA\Desktop\Github\pn_can_protocol\pn_can_protocol_2_0_0\STM32F103C8TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "pn_can_protocol_2_0_0.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"C:\Users\NIRUJA\Desktop\Github\pn_can_protocol\pn_can_protocol_2_0_0\STM32F103C8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="pn_can_protocol_2_0_0.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
