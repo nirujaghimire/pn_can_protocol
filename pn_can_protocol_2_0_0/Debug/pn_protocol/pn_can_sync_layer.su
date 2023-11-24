@@ -2,4 +2,4 @@
 ../pn_protocol/pn_can_sync_layer.c:51:12:txSendThread	64	static
 ../pn_protocol/pn_can_sync_layer.c:180:12:txReceiveThread	32	static
 ../pn_protocol/pn_can_sync_layer.c:242:12:rxSendThread	72	static
-../pn_protocol/pn_can_sync_layer.c:387:12:rxReceiveThread	72	static
+../pn_protocol/pn_can_sync_layer.c:388:12:rxReceiveThread	72	static
