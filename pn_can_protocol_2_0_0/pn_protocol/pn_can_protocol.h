@@ -82,6 +82,14 @@ struct CANLinkControl {
 			uint16_t size);
 
 	/**
+	 * This will pop the data in link
+	 * @param link		: Pointer to instance if CAN link (Link should use queue for transmit)
+	 * @return			: 1 for popped and
+	 * 					: 0 for fail to pop or link is using map to transmit
+	 */
+	int (*pop)(CANLink *link);
+
+	/**
 	 * This should be called continuously in while loop
 	 * @param link	: Pointer to instance of CAN link
 	 */
