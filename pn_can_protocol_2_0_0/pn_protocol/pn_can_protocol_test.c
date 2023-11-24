@@ -159,7 +159,7 @@ void run() {
 
 	uint32_t prevMillis = HAL_GetTick();
 	while (1) {
-		if ((HAL_GetTick() - prevMillis) > 5000) {
+		if ((HAL_GetTick() - prevMillis) > 300) {
 			StaticCANLink.addTxMsgPtr(canLink1, 0xAA, dataBytes1,
 					sizeof(dataBytes1));
 //			StaticCANLink.addTxMsgPtr(canLink1, 0xBB, dataBytes2,
@@ -176,7 +176,6 @@ void run() {
 		}
 		StaticCANLink.thread(canLink1);
 		StaticCANLink.thread(canLink2);
-		HAL_Delay(100);
 	}
 }
 #endif

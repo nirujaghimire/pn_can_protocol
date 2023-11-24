@@ -192,7 +192,7 @@ static void addTxMsgPtr(CANLink *link, uint32_t id, uint8_t *bytes,
 	syncData->size = size;
 	syncData->numTry = PN_CAN_PROTOCOL_NUM_OF_TRY;
 	syncData->track = SYNC_LAYER_CAN_START_REQ;
-	syncData->waitTill = 0xFFFFFFFF;
+	syncData->waitTill = 0;//b0xFFFFFFFF;
 
 	if (link->isQueue) {
 		Queue *queue = StaticQueue.enqueue(link->txQueue, syncData);
@@ -450,8 +450,6 @@ static void txThread(CANLink *link) {
 			if (status) {
 				if (syncData->isBytesDynamicallyAllocated)
 					StaticBuddyHeap.free(link->heap, syncData->bytes);
-				if (syncData->track==SYNC_LAYER_CAN_TRANSMIT_FAILED)
-					printf("##########Freee\n");
 				StaticBuddyHeap.free(link->heap, syncData);
 				StaticHashMap.delete(link->txMap, key[i]);
 			}
