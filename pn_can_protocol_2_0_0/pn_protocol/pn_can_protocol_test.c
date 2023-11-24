@@ -94,7 +94,7 @@ int rxCallback(uint32_t id, uint8_t *bytes, uint16_t size, int status) {
 uint8_t dataBytes1[8];
 uint8_t dataBytes2[16];
 uint8_t dataBytes3[32];
-uint8_t buffer1[2048 + mapSize(2048, 8)];
+//uint8_t buffer1[2048 + mapSize(2048, 8)];
 uint8_t buffer2[2048 + mapSize(2048, 8)];
 #ifdef TX_ENABLE
 void run() {
@@ -147,10 +147,10 @@ void run() {
 	for (int i = 0; i < sizeof(dataBytes3); i++)
 		dataBytes3[i] = i;
 
-	BuddyHeap heap1 = StaticBuddyHeap.new(buffer1, sizeof(buffer1), 8);
+//	BuddyHeap heap1 = StaticBuddyHeap.new(buffer1, sizeof(buffer1), 8);
 	BuddyHeap heap2 = StaticBuddyHeap.new(buffer2, sizeof(buffer2), 8);
 	canLink1 = StaticCANLink.new(0x1, 0x2, 0x3, 0x4, canSend, txCallback,
-			rxCallback, &heap1, 0);
+			rxCallback, NULL, 0);
 	canLink2 = StaticCANLink.new(0x11, 0x22, 0x33, 0x44, canSend, txCallback,
 			rxCallback, &heap2, 0);
 
