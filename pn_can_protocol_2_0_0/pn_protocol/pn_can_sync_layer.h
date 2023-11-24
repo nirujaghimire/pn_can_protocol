@@ -9,6 +9,10 @@
 #define PN_CAN_SYNC_LAYER_H_
 #include "stdint.h"
 
+#define TRANSMIT_TIMEOUT 1000
+#define RECEIVE_TIMEOUT  1000
+
+
 typedef enum {
 	SYNC_LAYER_CAN_START_REQ,
 	SYNC_LAYER_CAN_START_ACK,
@@ -28,17 +32,17 @@ typedef struct {
 	uint8_t *bytes;
 	uint16_t size;
 	uint8_t numTry;
-	///////////////////////
+	////////////For transmitter///////////
 	uint8_t frameIndex;
-	//////////////////////
+	////////////For receiver//////////
 	uint8_t frameRecords[19];
-	///////////////////////
+	////////////For both///////////
 	uint32_t crc;
 	SyncLayerCANTrack track;
 	uint8_t doesCRCMatch;
 	uint32_t waitTill;
 	uint8_t isTimeOut;
-
+	uint8_t isBytesDynamicallyAllocated;
 } SyncLayerCANData;
 
 typedef struct {
@@ -48,10 +52,9 @@ typedef struct {
 	uint32_t endAckID;
 /////////////////////////
 	int (*canSend)(uint32_t id, uint8_t *bytes, uint8_t len);
-
 } SyncLayerCANLink;
 
-struct SyncLayerCanControl{
+struct SyncLayerCanControl {
 	/**
 	 * Send thread for transmitting should be called in thread continuously
 	 * @param link 	: Link where data is to be transmitted
@@ -67,8 +70,8 @@ struct SyncLayerCanControl{
 	 * @param bytes	: bytes received from CAN
 	 * @param len	: length of CAN bytes received
 	 */
-	int (*txReceiveThread)(SyncLayerCANLink *link, SyncLayerCANData *data, uint32_t id,
-			uint8_t *bytes, uint16_t len);
+	int (*txReceiveThread)(SyncLayerCANLink *link, SyncLayerCANData *data,
+			uint32_t id, uint8_t *bytes, uint16_t len);
 
 	/**
 	 * Receive thread for receiving should be called in thread continuously
@@ -85,10 +88,9 @@ struct SyncLayerCanControl{
 	 * @param bytes	: bytes received from CAN
 	 * @param len	: length of CAN bytes received
 	 */
-	int (*rxReceiveThread)(SyncLayerCANLink *link, SyncLayerCANData *data, uint32_t id,
-			uint8_t *bytes, uint16_t len);
+	int (*rxReceiveThread)(SyncLayerCANLink *link, SyncLayerCANData *data,
+			uint32_t id, uint8_t *bytes, uint16_t len);
 };
 extern struct SyncLayerCanControl StaticSyncLayerCan;
-
 
 #endif /* PN_CAN_SYNC_LAYER_H_ */

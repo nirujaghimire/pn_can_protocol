@@ -10,9 +10,6 @@
 #include "crc.h"
 #include "stdarg.h"
 
-#define TRANSMIT_TIMEOUT 1000
-#define RECEIVE_TIMEOUT 1000
-
 //#define CONSOLE_ENABLE
 
 #ifdef CONSOLE_ENABLE
@@ -56,7 +53,6 @@ static int txSendThread(SyncLayerCANLink *link, SyncLayerCANData *data) {
 	if (data->track == SYNC_LAYER_CAN_START_REQ) {
 		data->doesCRCMatch = 1;
 		data->isTimeOut = 0;
-		isSuccess = 1;
 		data->frameIndex = 0;
 		id = link->startReqID;
 		*(uint32_t*) (bytes) = data->id;
@@ -64,6 +60,7 @@ static int txSendThread(SyncLayerCANLink *link, SyncLayerCANData *data) {
 		bytes[6] = data->numTry;
 		len = 8;
 		if (link->canSend(id, bytes, len)) {
+			isSuccess = 1;
 			data->track = SYNC_LAYER_CAN_START_ACK;
 #ifdef CONSOLE_ENABLE
 			console(CONSOLE_INFO, __func__, "START REQ> 0x%x : 0x%x, %d, %d\n", id,
@@ -78,7 +75,6 @@ static int txSendThread(SyncLayerCANLink *link, SyncLayerCANData *data) {
 #endif
 
 	} else if (data->track == SYNC_LAYER_CAN_DATA) {
-		isSuccess = 1;
 		id = data->id;
 		int indexOffset = data->frameIndex * 7;
 		bytes[0] = data->frameIndex;
@@ -87,6 +83,7 @@ static int txSendThread(SyncLayerCANLink *link, SyncLayerCANData *data) {
 		for (int i = 0; i < len; i++)
 			bytes[i + 1] = data->bytes[i + indexOffset];
 		if (link->canSend(id, bytes, len + 1)) {
+			isSuccess = 1;
 			data->frameIndex++;
 			if (remSize <= 7)
 				data->track = SYNC_LAYER_CAN_END_REQ;
@@ -101,7 +98,6 @@ static int txSendThread(SyncLayerCANLink *link, SyncLayerCANData *data) {
 					bytes[0]);
 #endif
 	} else if (data->track == SYNC_LAYER_CAN_MISSING_DATA) {
-		isSuccess = 1;
 		id = data->id;
 		int indexOffset = data->frameIndex * 7;
 		bytes[0] = data->frameIndex;
@@ -110,6 +106,7 @@ static int txSendThread(SyncLayerCANLink *link, SyncLayerCANData *data) {
 		for (int i = 0; i < len; i++)
 			bytes[i + 1] = data->bytes[i + indexOffset];
 		if (link->canSend(id, bytes, len + 1)) {
+			isSuccess = 1;
 			data->track = SYNC_LAYER_CAN_END_REQ;
 #ifdef CONSOLE_ENABLE
 			console(CONSOLE_INFO, __func__, "MISSING DATA> 0x%x : %d, ...\n",
@@ -122,13 +119,13 @@ static int txSendThread(SyncLayerCANLink *link, SyncLayerCANData *data) {
 					id, bytes[0]);
 #endif
 	} else if (data->track == SYNC_LAYER_CAN_END_REQ) {
-		isSuccess = 1;
 		len = 8;
 		id = link->endReqID;
 		*(uint32_t*) bytes = data->id;
 		data->crc = crc32_calculate(data->bytes, data->size);
 		*(uint32_t*) (&bytes[4]) = data->crc;
 		if (link->canSend(id, bytes, len)) {
+			isSuccess = 1;
 			data->track = SYNC_LAYER_CAN_END_ACK;
 #ifdef CONSOLE_ENABLE
 			console(CONSOLE_INFO, __func__, "END REQ> 0x%x : 0x%x, 0x%x \n", id,
@@ -144,6 +141,28 @@ static int txSendThread(SyncLayerCANLink *link, SyncLayerCANData *data) {
 
 	if (isSuccess)
 		data->waitTill = getMillis() + TRANSMIT_TIMEOUT;
+
+	if (getMillis() > data->waitTill) {
+#ifdef CONSOLE_ENABLE
+			console(CONSOLE_WARNING, __func__, "TIMEOUT>0x%x : %ld < %ld\n", data->id,
+			TRANSMIT_TIMEOUT, getMillis() - data->waitTill+TRANSMIT_TIMEOUT);
+	#endif
+		data->isTimeOut = 1;
+		data->numTry--;
+		if (data->numTry > 0) {
+			data->track = SYNC_LAYER_CAN_START_REQ;
+#ifdef CONSOLE_ENABLE
+				console(CONSOLE_WARNING, __func__, "RETRY>0x%x : %d\n", data->id,
+						data->numTry);
+	#endif
+		} else {
+			data->track = SYNC_LAYER_CAN_TRANSMIT_FAILED;
+#ifdef CONSOLE_ENABLE
+				console(CONSOLE_ERROR, __func__, "RETRY EXCEEDS>0x%x\n", data->id);
+	#endif
+		}
+	}
+
 	return isSuccess;
 }
 
@@ -155,8 +174,8 @@ static int txSendThread(SyncLayerCANLink *link, SyncLayerCANData *data) {
  * @param bytes	: bytes received from CAN
  * @param len	: length of CAN bytes received
  */
-static int txReceiveThread(SyncLayerCANLink *link, SyncLayerCANData *data, uint32_t id,
-		uint8_t *bytes, uint16_t len) {
+static int txReceiveThread(SyncLayerCANLink *link, SyncLayerCANData *data,
+		uint32_t id, uint8_t *bytes, uint16_t len) {
 	int isSuccess = 0;
 
 	if (data->track == SYNC_LAYER_CAN_START_ACK && id == link->startAckID) {
@@ -208,26 +227,6 @@ static int txReceiveThread(SyncLayerCANLink *link, SyncLayerCANData *data, uint3
 	if (isSuccess)
 		data->waitTill = getMillis() + TRANSMIT_TIMEOUT;
 
-	if (getMillis() > data->waitTill) {
-#ifdef CONSOLE_ENABLE
-		console(CONSOLE_WARNING, __func__, "TIMEOUT>0x%x : %d > %d\n", data->id,
-		TRANSMIT_TIMEOUT, getMillis() - data->waitTill);
-#endif
-		data->isTimeOut = 1;
-		data->numTry--;
-		if (data->numTry > 0) {
-			data->track = SYNC_LAYER_CAN_START_REQ;
-#ifdef CONSOLE_ENABLE
-			console(CONSOLE_WARNING, __func__, "RETRY>0x%x : %d\n", data->id,
-					data->numTry);
-#endif
-		} else {
-			data->track = SYNC_LAYER_CAN_TRANSMIT_FAILED;
-#ifdef CONSOLE_ENABLE
-			console(CONSOLE_ERROR, __func__, "RETRY EXCEEDS>0x%x\n", data->id);
-#endif
-		}
-	}
 
 	return isSuccess;
 }
@@ -242,12 +241,12 @@ static int rxSendThread(SyncLayerCANLink *link, SyncLayerCANData *data) {
 	uint32_t id;
 	uint8_t bytes[8];
 	if (data->track == SYNC_LAYER_CAN_START_ACK) {
-		isSuccess = 1;
 		id = link->startAckID;
 		*(uint32_t*) bytes = data->id;
 		*(uint16_t*) (&bytes[4]) = data->size;
 		bytes[6] = data->numTry;
 		if (link->canSend(id, bytes, 8)) {
+			isSuccess = 1;
 			data->track = SYNC_LAYER_CAN_DATA;
 #ifdef CONSOLE_ENABLE
 			console(CONSOLE_INFO, __func__, "START ACK> 0x%x : 0x%x, %d, %d\n", id,
@@ -261,7 +260,6 @@ static int rxSendThread(SyncLayerCANLink *link, SyncLayerCANData *data) {
 					*(uint32_t*) bytes, *(uint16_t*) (&bytes[4]),bytes[6]);
 #endif
 	} else if (data->track == SYNC_LAYER_CAN_END_ACK) {
-		isSuccess = 1;
 		id = link->endAckID;
 		*(uint32_t*) bytes = data->id;
 
@@ -288,6 +286,7 @@ static int rxSendThread(SyncLayerCANLink *link, SyncLayerCANData *data) {
 			bytes[4] = 1;
 			bytes[5] = missingFrameIndex;
 			if (link->canSend(id, bytes, 8)) {
+				isSuccess = 1;
 				data->track = SYNC_LAYER_CAN_MISSING_DATA;
 #ifdef CONSOLE_ENABLE
 				console(CONSOLE_INFO, __func__,
@@ -309,6 +308,7 @@ static int rxSendThread(SyncLayerCANLink *link, SyncLayerCANData *data) {
 			bytes[6] = data->doesCRCMatch;
 
 			if (link->canSend(id, bytes, 8)) {
+				isSuccess = 1;
 				if (data->doesCRCMatch)
 					data->track = SYNC_LAYER_CAN_RECEIVE_SUCCESS;
 				else {
@@ -366,8 +366,8 @@ static int rxSendThread(SyncLayerCANLink *link, SyncLayerCANData *data) {
 #endif
 		}
 #ifdef CONSOLE_ENABLE
-		console(CONSOLE_ERROR, __func__, "TIMEOUT>0x%x : %d > %d\n", data->id,
-		RECEIVE_TIMEOUT, getMillis() - data->waitTill);
+		console(CONSOLE_ERROR, __func__, "TIMEOUT>0x%x : %ld < %ld\n", data->id,
+		RECEIVE_TIMEOUT, getMillis() - data->waitTill+RECEIVE_TIMEOUT);
 #endif
 	}
 
@@ -382,14 +382,15 @@ static int rxSendThread(SyncLayerCANLink *link, SyncLayerCANData *data) {
  * @param bytes	: bytes received from CAN
  * @param len	: length of CAN bytes received
  */
-static int rxReceiveThread(SyncLayerCANLink *link, SyncLayerCANData *data, uint32_t id,
-		uint8_t *bytes, uint16_t len) {
+static int rxReceiveThread(SyncLayerCANLink *link, SyncLayerCANData *data,
+		uint32_t id, uint8_t *bytes, uint16_t len) {
 	int isSuccess = 0;
 	if (data->track == SYNC_LAYER_CAN_START_REQ && id == link->startReqID) {
 		for (int i = 0; i < sizeof(data->frameRecords); i++)
 			data->frameRecords[i] = 0;
 		isSuccess = 1;
 		data->size = *(uint16_t*) (&bytes[4]);
+		data->numTry = bytes[6];
 		data->track = SYNC_LAYER_CAN_START_ACK;
 #ifdef CONSOLE_ENABLE
 		console(CONSOLE_INFO, __func__, "START REQ>0x%x : 0x%x, %d, %d\n", id,
@@ -411,7 +412,7 @@ static int rxReceiveThread(SyncLayerCANLink *link, SyncLayerCANData *data, uint3
 		int bitIndex = frameIndex % 8;
 		data->frameRecords[recordIndex] = data->frameRecords[recordIndex]
 				| (1 << bitIndex);
-		for (int i = 0; i < len - 1; i++)
+		for (int i = 0; i < (len - 1); i++)
 			data->bytes[indexOffset + i] = bytes[i + 1];
 #ifdef CONSOLE_ENABLE
 		console(CONSOLE_INFO, __func__, "DATA>0x%x : %d, ...\n", id, bytes[0]);
@@ -438,10 +439,7 @@ static int rxReceiveThread(SyncLayerCANLink *link, SyncLayerCANData *data, uint3
 	return isSuccess;
 }
 
-struct SyncLayerCanControl StaticSyncLayerCan = {
-	.rxReceiveThread = 	rxReceiveThread,
-	.rxSendThread = rxSendThread,
-	.txReceiveThread = txReceiveThread,
-	.txSendThread = txSendThread
-};
+struct SyncLayerCanControl StaticSyncLayerCan = { .rxReceiveThread =
+		rxReceiveThread, .rxSendThread = rxSendThread, .txReceiveThread =
+		txReceiveThread, .txSendThread = txSendThread };
 
