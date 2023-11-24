@@ -39,6 +39,42 @@ static void console(ConsoleStatus status, const char *func_name,
 
 static CANLink link[10];
 static int linkCount = 0;
+static int allocatedMemory = 0;
+
+/**
+ * It allocates the memory and return pointer to it
+ * @param heap          : Pointer to static heap
+ *                      : NULL for dynamic heap
+ * @param sizeInByte    : Size in bytes
+ * @return              : Pointer to allocated memory
+ *                      : NULL if there exist no memory for allocation
+ */
+static void* allocateMemory(BuddyHeap *heap, int sizeInByte) {
+	if (sizeInByte <= 0)
+		return NULL;
+	void *ptr;
+	ptr = heap != NULL ? StaticBuddyHeap.malloc(heap, sizeInByte) : malloc(sizeInByte);
+	if (ptr != NULL)
+		allocatedMemory += sizeInByte;
+	return ptr;
+}
+
+/**
+ * It free the allocated memory
+ * @param heap          : Pointer to static heap
+ *                      : NULL for dynamic heap
+ * @param pointer       : Pointer to allocated Memory
+ * @param sizeInByte    : Size to be freed
+ * @return              : 1 for success (OR) 0 for failed
+ */
+static int freeMemory(BuddyHeap *heap, void *pointer, int sizeInByte) {
+	if (pointer == NULL || sizeInByte <= 0)
+		return 0;
+	heap != NULL ? StaticBuddyHeap.free(heap, pointer) : free(pointer);
+	allocatedMemory -= sizeInByte;
+	return 1;
+}
+
 
 static uint32_t getMillis() {
 	return HAL_GetTick();
@@ -112,9 +148,9 @@ static CANLink* new(uint32_t startReqID, uint32_t startAckID, uint32_t endReqID,
 				startReqID, startAckID, endReqID, endAckID);
 #endif
 		if (isQueue)
-			StaticBuddyHeap.free(heap, link[n].txQueue);
+			freeMemory(heap, link[n].txQueue,sizeof(Queue));
 		else
-			StaticBuddyHeap.free(heap, link[n].txMap);
+			freeMemory(heap, link[n].txMap,sizeof(HashMap));
 		return NULL;
 	}
 #ifdef CONSOLE_ENABLE
@@ -164,14 +200,14 @@ static void addTxMsgPtr(CANLink *link, uint32_t id, uint8_t *bytes,
 	if (!link->isQueue) {
 		syncData = StaticHashMap.get(link->txMap, id);
 		if (syncData == NULL) {
-			syncData = StaticBuddyHeap.malloc(link->heap,
+			syncData = allocateMemory(link->heap,
 					sizeof(SyncLayerCANData));
 			isSyncDataAllocated = 1;
 		}
 	} else {
 		syncData = getDataFromQueue(link->txQueue, id);
 		if (syncData == NULL) {
-			syncData = StaticBuddyHeap.malloc(link->heap,
+			syncData = allocateMemory(link->heap,
 					sizeof(SyncLayerCANData));
 			isSyncDataAllocated = 1;
 		}
@@ -207,7 +243,7 @@ static void addTxMsgPtr(CANLink *link, uint32_t id, uint8_t *bytes,
 					"Data 0x%x insertion in transmit queue : FAILED (Queue is full) \n",
 					id);
 #endif
-			StaticBuddyHeap.free(link->heap, syncData);
+			freeMemory(link->heap, syncData,sizeof(SyncLayerCANData));
 			return;
 		}
 #ifdef CONSOLE_ENABLE
@@ -223,7 +259,7 @@ static void addTxMsgPtr(CANLink *link, uint32_t id, uint8_t *bytes,
 					"Data 0x%x insertion in transmit map : FAILED (Map is full) \n",
 					id);
 #endif
-			StaticBuddyHeap.free(link->heap, syncData);
+			freeMemory(link->heap, syncData,sizeof(SyncLayerCANData));
 			return;
 		}
 #ifdef CONSOLE_ENABLE
@@ -250,14 +286,14 @@ static void addTxMsg(CANLink *link, uint32_t id, uint8_t *bytes, uint16_t size) 
 	if (!link->isQueue) {
 		syncData = StaticHashMap.get(link->txMap, id);
 		if (syncData == NULL) {
-			syncData = StaticBuddyHeap.malloc(link->heap,
+			syncData =allocateMemory(link->heap,
 					sizeof(SyncLayerCANData));
 			isSyncDataAllocated = 1;
 		}
 	} else {
 		syncData = getDataFromQueue(link->txQueue, id);
 		if (syncData == NULL) {
-			syncData = StaticBuddyHeap.malloc(link->heap,
+			syncData = allocateMemory(link->heap,
 					sizeof(SyncLayerCANData));
 			isSyncDataAllocated = 1;
 		}
@@ -278,7 +314,7 @@ static void addTxMsg(CANLink *link, uint32_t id, uint8_t *bytes, uint16_t size) 
 
 	uint8_t *allocatedBytes;
 	if (!isSyncDataAllocated)
-		allocatedBytes = StaticBuddyHeap.malloc(link->heap, size);
+		allocatedBytes = allocateMemory(link->heap, size);
 	else
 		allocatedBytes = syncData->bytes;
 
@@ -288,7 +324,7 @@ static void addTxMsg(CANLink *link, uint32_t id, uint8_t *bytes, uint16_t size) 
 				"Bytes for data 0x%x allocation : FAILED (Heap is full) \n",
 				id);
 #endif
-		StaticBuddyHeap.free(link->heap, syncData);
+		freeMemory(link->heap, syncData,sizeof(SyncLayerCANData));
 		return;
 	}
 #ifdef CONSOLE_ENABLE
@@ -319,8 +355,8 @@ static void addTxMsg(CANLink *link, uint32_t id, uint8_t *bytes, uint16_t size) 
 					"Data 0x%x insertion in transmit queue : FAILED (Queue is full) \n",
 					id);
 #endif
-			StaticBuddyHeap.free(link->heap, allocatedBytes);
-			StaticBuddyHeap.free(link->heap, syncData);
+			freeMemory(link->heap, allocatedBytes,syncData->size );
+			freeMemory(link->heap, syncData,sizeof(SyncLayerCANData));
 			return;
 		}
 #ifdef CONSOLE_ENABLE
@@ -336,8 +372,8 @@ static void addTxMsg(CANLink *link, uint32_t id, uint8_t *bytes, uint16_t size) 
 					"Data 0x%x insertion in transmit map : FAILED (Map is full) \n",
 					id);
 #endif
-			StaticBuddyHeap.free(link->heap, allocatedBytes);
-			StaticBuddyHeap.free(link->heap, syncData);
+			freeMemory(link->heap, allocatedBytes,syncData->size );
+			freeMemory(link->heap, syncData,sizeof(SyncLayerCANData));
 			return;
 		}
 #ifdef CONSOLE_ENABLE
@@ -363,7 +399,7 @@ static void addRxMsgPtr(CANLink *link, uint32_t id, uint8_t *bytes,
 	int isSyncDataAllocated = 0;
 	syncData = StaticHashMap.get(link->rxMap, id);
 	if (syncData == NULL) {
-		syncData = StaticBuddyHeap.malloc(link->heap, sizeof(SyncLayerCANData));
+		syncData = allocateMemory(link->heap, sizeof(SyncLayerCANData));
 		isSyncDataAllocated = 1;
 	}
 	if (syncData == NULL) {
@@ -393,7 +429,7 @@ static void addRxMsgPtr(CANLink *link, uint32_t id, uint8_t *bytes,
 				"Data 0x%x insertion in receive map : FAILED (Map is full) \n",
 				id);
 #endif
-		StaticBuddyHeap.free(link->heap, syncData);
+		freeMemory(link->heap, syncData,sizeof(SyncLayerCANData));
 		return;
 	}
 #ifdef CONSOLE_ENABLE
@@ -419,8 +455,8 @@ static void txThread(CANLink *link) {
 						syncData->size, 0);
 			if (status) {
 				if (syncData->isBytesDynamicallyAllocated)
-					StaticBuddyHeap.free(link->heap, syncData->bytes);
-				StaticBuddyHeap.free(link->heap, syncData);
+					freeMemory(link->heap, syncData->bytes,syncData->size);
+				freeMemory(link->heap, syncData,sizeof(SyncLayerCANData));
 				StaticQueue.dequeue(link->txQueue);
 			}
 		}
@@ -455,8 +491,8 @@ static void txThread(CANLink *link) {
 						syncData->size, 0);
 			if (status) {
 				if (syncData->isBytesDynamicallyAllocated)
-					StaticBuddyHeap.free(link->heap, syncData->bytes);
-				StaticBuddyHeap.free(link->heap, syncData);
+					freeMemory(link->heap, syncData->bytes,syncData->size);
+				freeMemory(link->heap, syncData,sizeof(SyncLayerCANData));
 				StaticHashMap.delete(link->txMap, key[i]);
 			}
 		}
@@ -497,8 +533,8 @@ static void rxThread(CANLink *link) {
 
 		if (status) {
 			if (syncData->isBytesDynamicallyAllocated)
-				StaticBuddyHeap.free(link->heap, syncData->bytes);
-			StaticBuddyHeap.free(link->heap, syncData);
+				freeMemory(link->heap, syncData->bytes,syncData->size);
+			freeMemory(link->heap, syncData,sizeof(SyncLayerCANData));
 			StaticHashMap.delete(link->rxMap, key[i]);
 		}
 	}
@@ -512,7 +548,7 @@ static void rxThread(CANLink *link) {
 			dataID = *(uint32_t*) canData.byte;
 			uint16_t size = *(uint16_t*) (&canData.byte[4]);
 			if (!StaticHashMap.isKeyExist(link->rxMap, dataID)) {
-				syncData = StaticBuddyHeap.malloc(link->heap,
+				syncData = allocateMemory(link->heap,
 						sizeof(SyncLayerCANData));
 				if (syncData == NULL) {
 #ifdef CONSOLE_ENABLE
@@ -531,14 +567,14 @@ static void rxThread(CANLink *link) {
 				syncData->isBytesDynamicallyAllocated = 1;
 				syncData->id = dataID;
 				syncData->size = size;
-				syncData->bytes = StaticBuddyHeap.malloc(link->heap, size);
+				syncData->bytes = allocateMemory(link->heap, size);
 				if (syncData->bytes == NULL) {
 #ifdef CONSOLE_ENABLE
 					console(CONSOLE_ERROR, __func__,
 							"Bytes for data 0x%x allocation : FAILED (heap is full)\n",
 							dataID);
 #endif
-					StaticBuddyHeap.free(link->heap, syncData);
+					freeMemory(link->heap, syncData,sizeof(SyncLayerCANData));
 					return;
 				}
 #ifdef CONSOLE_ENABLE
@@ -587,7 +623,6 @@ static void canReceive(CANLink *link, uint32_t id, uint8_t *bytes, uint16_t len)
 		if (StaticHashMap.isKeyExist(link->rxMap, id))
 			StaticCANQueue.enqueue(&link->rxCanQueue, id, bytes, len);
 	}
-
 }
 
 struct CANLinkControl StaticCANLink = { .addRxMsgPtr = addRxMsgPtr, .addTxMsg =
