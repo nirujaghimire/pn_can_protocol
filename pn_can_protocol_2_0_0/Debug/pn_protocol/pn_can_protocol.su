@@ -4,6 +4,6 @@
 ../pn_protocol/pn_can_protocol.c:239:13:addTxMsg	48	static
 ../pn_protocol/pn_can_protocol.c:353:13:addRxMsgPtr	40	static
 ../pn_protocol/pn_can_protocol.c:400:13:txThread	128	dynamic
-../pn_protocol/pn_can_protocol.c:475:13:rxThread	104	dynamic
-../pn_protocol/pn_can_protocol.c:564:13:thread	16	static
-../pn_protocol/pn_can_protocol.c:575:13:canReceive	32	static
+../pn_protocol/pn_can_protocol.c:477:13:rxThread	104	dynamic
+../pn_protocol/pn_can_protocol.c:566:13:thread	16	static
+../pn_protocol/pn_can_protocol.c:577:13:canReceive	32	static

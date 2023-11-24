@@ -16,7 +16,7 @@
 #include "stdlib.h"
 
 #define PN_CAN_PROTOCOL_MAX_LINK_SIZE 3
-#define PN_CAN_PROTOCOL_NUM_OF_TRY 3
+#define PN_CAN_PROTOCOL_NUM_OF_TRY 1
 
 typedef struct {
 	SyncLayerCANLink link;

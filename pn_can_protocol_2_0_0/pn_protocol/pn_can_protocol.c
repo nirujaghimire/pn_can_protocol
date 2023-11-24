@@ -450,6 +450,8 @@ static void txThread(CANLink *link) {
 			if (status) {
 				if (syncData->isBytesDynamicallyAllocated)
 					StaticBuddyHeap.free(link->heap, syncData->bytes);
+				if (syncData->track==SYNC_LAYER_CAN_TRANSMIT_FAILED)
+					printf("##########Freee\n");
 				StaticBuddyHeap.free(link->heap, syncData);
 				StaticHashMap.delete(link->txMap, key[i]);
 			}
