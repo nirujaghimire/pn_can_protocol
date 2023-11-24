@@ -3896,7 +3896,7 @@ LOAD c:/st/stm32cubeide_1.10.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.ext
  .igot.plt      0x000000002000051c        0x0 c:/st/stm32cubeide_1.10.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.200.202301161003/tools/bin/../lib/gcc/arm-none-eabi/10.3.1/thumb/v7-m/nofp/crtbegin.o
                 0x000000002000051c                . = ALIGN (0x4)
 
-.bss            0x000000002000051c     0x3204 load address 0x0000000008006cc4
+.bss            0x000000002000051c     0x3a44 load address 0x0000000008006cc4
                 0x000000002000051c                _sbss = .
                 0x000000002000051c                __bss_start__ = _sbss
  *(.bss)
@@ -3933,49 +3933,49 @@ LOAD c:/st/stm32cubeide_1.10.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.ext
  .bss.dataBytes3
                 0x0000000020002e88       0x3c ./pn_protocol/pn_can_protocol_test.o
                 0x0000000020002e88                dataBytes3
- .bss.buffer1   0x0000000020002ec4      0x420 ./pn_protocol/pn_can_protocol_test.o
+ .bss.buffer1   0x0000000020002ec4      0x840 ./pn_protocol/pn_can_protocol_test.o
                 0x0000000020002ec4                buffer1
- .bss.buffer2   0x00000000200032e4      0x420 ./pn_protocol/pn_can_protocol_test.o
-                0x00000000200032e4                buffer2
+ .bss.buffer2   0x0000000020003704      0x840 ./pn_protocol/pn_can_protocol_test.o
+                0x0000000020003704                buffer2
  .bss.crc_value
-                0x0000000020003704        0x4 ./utils/crc.o
+                0x0000000020003f44        0x4 ./utils/crc.o
  .bss.allocatedMemory
-                0x0000000020003708        0x4 ./utils/hash_map.o
+                0x0000000020003f48        0x4 ./utils/hash_map.o
  .bss.allocatedMemory
-                0x000000002000370c        0x4 ./utils/queue.o
+                0x0000000020003f4c        0x4 ./utils/queue.o
  .bss.__malloc_free_list
-                0x0000000020003710        0x4 c:/st/stm32cubeide_1.10.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.200.202301161003/tools/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7-m/nofp\libc_nano.a(lib_a-nano-mallocr.o)
-                0x0000000020003710                __malloc_free_list
+                0x0000000020003f50        0x4 c:/st/stm32cubeide_1.10.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.200.202301161003/tools/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7-m/nofp\libc_nano.a(lib_a-nano-mallocr.o)
+                0x0000000020003f50                __malloc_free_list
  .bss.__malloc_sbrk_start
-                0x0000000020003714        0x4 c:/st/stm32cubeide_1.10.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.200.202301161003/tools/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7-m/nofp\libc_nano.a(lib_a-nano-mallocr.o)
-                0x0000000020003714                __malloc_sbrk_start
+                0x0000000020003f54        0x4 c:/st/stm32cubeide_1.10.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.200.202301161003/tools/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7-m/nofp\libc_nano.a(lib_a-nano-mallocr.o)
+                0x0000000020003f54                __malloc_sbrk_start
  .bss.__lock___malloc_recursive_mutex
-                0x0000000020003718        0x1 c:/st/stm32cubeide_1.10.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.200.202301161003/tools/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7-m/nofp\libc_nano.a(lib_a-lock.o)
-                0x0000000020003718                __lock___malloc_recursive_mutex
+                0x0000000020003f58        0x1 c:/st/stm32cubeide_1.10.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.200.202301161003/tools/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7-m/nofp\libc_nano.a(lib_a-lock.o)
+                0x0000000020003f58                __lock___malloc_recursive_mutex
  .bss.__lock___sfp_recursive_mutex
-                0x0000000020003719        0x1 c:/st/stm32cubeide_1.10.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.200.202301161003/tools/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7-m/nofp\libc_nano.a(lib_a-lock.o)
-                0x0000000020003719                __lock___sfp_recursive_mutex
+                0x0000000020003f59        0x1 c:/st/stm32cubeide_1.10.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.200.202301161003/tools/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7-m/nofp\libc_nano.a(lib_a-lock.o)
+                0x0000000020003f59                __lock___sfp_recursive_mutex
  .bss.__lock___sinit_recursive_mutex
-                0x000000002000371a        0x1 c:/st/stm32cubeide_1.10.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.200.202301161003/tools/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7-m/nofp\libc_nano.a(lib_a-lock.o)
-                0x000000002000371a                __lock___sinit_recursive_mutex
- *fill*         0x000000002000371b        0x1 
- .bss.errno     0x000000002000371c        0x4 c:/st/stm32cubeide_1.10.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.200.202301161003/tools/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7-m/nofp\libc_nano.a(lib_a-reent.o)
-                0x000000002000371c                errno
+                0x0000000020003f5a        0x1 c:/st/stm32cubeide_1.10.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.200.202301161003/tools/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7-m/nofp\libc_nano.a(lib_a-lock.o)
+                0x0000000020003f5a                __lock___sinit_recursive_mutex
+ *fill*         0x0000000020003f5b        0x1 
+ .bss.errno     0x0000000020003f5c        0x4 c:/st/stm32cubeide_1.10.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.200.202301161003/tools/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7-m/nofp\libc_nano.a(lib_a-reent.o)
+                0x0000000020003f5c                errno
  *(COMMON)
-                0x0000000020003720                . = ALIGN (0x4)
-                0x0000000020003720                _ebss = .
-                0x0000000020003720                __bss_end__ = _ebss
+                0x0000000020003f60                . = ALIGN (0x4)
+                0x0000000020003f60                _ebss = .
+                0x0000000020003f60                __bss_end__ = _ebss
 
 ._user_heap_stack
-                0x0000000020003720      0x600 load address 0x0000000008006cc4
-                0x0000000020003720                . = ALIGN (0x8)
+                0x0000000020003f60      0x600 load address 0x0000000008006cc4
+                0x0000000020003f60                . = ALIGN (0x8)
                 [!provide]                        PROVIDE (end = .)
-                0x0000000020003720                PROVIDE (_end = .)
-                0x0000000020003920                . = (. + _Min_Heap_Size)
- *fill*         0x0000000020003720      0x200 
-                0x0000000020003d20                . = (. + _Min_Stack_Size)
- *fill*         0x0000000020003920      0x400 
-                0x0000000020003d20                . = ALIGN (0x8)
+                0x0000000020003f60                PROVIDE (_end = .)
+                0x0000000020004160                . = (. + _Min_Heap_Size)
+ *fill*         0x0000000020003f60      0x200 
+                0x0000000020004560                . = (. + _Min_Stack_Size)
+ *fill*         0x0000000020004160      0x400 
+                0x0000000020004560                . = ALIGN (0x8)
 
 /DISCARD/
  libc.a(*)
