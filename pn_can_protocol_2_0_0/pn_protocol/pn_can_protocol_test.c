@@ -154,12 +154,12 @@ void run() {
 	canLink2 = StaticCANLink.new(0x11, 0x22, 0x33, 0x44, canSend, txCallback,
 			rxCallback, &heap2, 1);
 
-	HAL_Delay(5000);
+	HAL_Delay(3000);
 	printf("----------------------RX INITIATING-----------------------\n");
 
 	uint32_t prevMillis = HAL_GetTick();
 	while (1) {
-		if ((HAL_GetTick() - prevMillis) > 100) {
+		if ((HAL_GetTick() - prevMillis) > 10) {
 			StaticCANLink.addTxMsgPtr(canLink1, 0xAA, dataBytes1,
 					sizeof(dataBytes1));
 			StaticCANLink.addTxMsgPtr(canLink1, 0xBB, dataBytes2,
