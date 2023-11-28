@@ -1,6 +1,0 @@
-../pn_protocol/pn_can_protocol_test.c:18:13:canInit	48	static
-../pn_protocol/pn_can_protocol_test.c:44:6:canInterrupt	16	static
-../pn_protocol/pn_can_protocol_test.c:56:12:canSend	24	static
-../pn_protocol/pn_can_protocol_test.c:70:5:txCallback	32	static
-../pn_protocol/pn_can_protocol_test.c:84:5:rxCallback	32	static
-../pn_protocol/pn_can_protocol_test.c:143:6:run	112	static
