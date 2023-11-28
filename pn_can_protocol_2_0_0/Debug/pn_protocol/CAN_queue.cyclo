@@ -1,5 +1,0 @@
-CAN_queue.c:13:14:new	2
-CAN_queue.c:23:12:enqueue	2
-CAN_queue.c:38:14:peek	1
-CAN_queue.c:42:14:dequeue	2
-CAN_queue.c:56:13:print	3
