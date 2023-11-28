@@ -1,0 +1,14 @@
+buddy_heap.c:10:12:get2power	1
+buddy_heap.c:14:12:getLog2	2
+buddy_heap.c:20:13:setMap	3
+buddy_heap.c:29:12:getMap	2
+buddy_heap.c:42:12:isValidPointer	3
+buddy_heap.c:48:13:printRecursion	5
+buddy_heap.c:70:13:printMemory	1
+buddy_heap.c:78:13:printMap	9
+buddy_heap.c:115:13:print	1
+buddy_heap.c:121:12:allocateRecursion	10
+buddy_heap.c:153:14:allocate	2
+buddy_heap.c:162:12:deallocateRecursion	5
+buddy_heap.c:186:12:deallocate	2
+buddy_heap.c:204:18:new	4

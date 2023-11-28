@@ -1,0 +1,5 @@
+pn_can_sync_layer.c:39:17:getMillis	1
+pn_can_sync_layer.c:48:12:txSendThread	15
+pn_can_sync_layer.c:177:12:txReceiveThread	9
+pn_can_sync_layer.c:239:12:rxSendThread	17
+pn_can_sync_layer.c:385:12:rxReceiveThread	10

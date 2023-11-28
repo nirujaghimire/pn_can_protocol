@@ -1,0 +1,13 @@
+../pn_protocol/pn_can_protocol.c:52:14:allocateMemory	24	static
+../pn_protocol/pn_can_protocol.c:71:12:freeMemory	24	static
+../pn_protocol/pn_can_protocol.c:79:17:getMillis	8	static
+../pn_protocol/pn_can_protocol.c:95:17:new	552	static
+../pn_protocol/pn_can_protocol.c:173:26:getDataFromQueue	32	static
+../pn_protocol/pn_can_protocol.c:194:13:addTxMsgPtr	40	static
+../pn_protocol/pn_can_protocol.c:278:13:addTxMsg	48	static
+../pn_protocol/pn_can_protocol.c:390:13:addRxMsgPtr	40	static
+../pn_protocol/pn_can_protocol.c:444:12:pop	24	static
+../pn_protocol/pn_can_protocol.c:455:13:txThread	128	dynamic
+../pn_protocol/pn_can_protocol.c:530:13:rxThread	104	dynamic
+../pn_protocol/pn_can_protocol.c:618:13:thread	16	static
+../pn_protocol/pn_can_protocol.c:629:13:canReceive	32	static

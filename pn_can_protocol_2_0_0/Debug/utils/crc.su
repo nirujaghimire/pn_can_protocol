@@ -1,0 +1,3 @@
+../utils/crc.c:46:6:crc_init	4	static
+../utils/crc.c:49:10:crc32_accumulate	40	static
+../utils/crc.c:64:10:crc32_calculate	16	static

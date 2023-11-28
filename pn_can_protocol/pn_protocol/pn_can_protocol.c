@@ -46,7 +46,7 @@ typedef enum {
 static int console(int condition, ConsoleStatus status, const char *func_name, const char *msg, ...) {
 	if (!condition)
 		return 0;
-	return 1;
+//	return 1;
 
 	if (status == CONSOLE_INFO)
 		return 1;

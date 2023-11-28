@@ -12,8 +12,8 @@
 #include "test.h"
 
 
-#define SYNC_LAYER_CAN_TRANSMIT_TIMEOUT 1000
-#define SYNC_LAYER_CAN_RECEIVE_TIMEOUT 2000
+#define SYNC_LAYER_CAN_TRANSMIT_TIMEOUT 5000
+#define SYNC_LAYER_CAN_RECEIVE_TIMEOUT 5000
 
 #define SYNC_LAYER_CAN_TX_SEND_RETRY 2
 
@@ -23,10 +23,10 @@ typedef enum {
 } ConsoleStatus;
 static void console(ConsoleStatus status, const char *func_name,
 		const char *msg, ...) {
-	if (status == CONSOLE_INFO)
-		return;
-	if (status == CONSOLE_WARNING)
-		return;
+//	if (status == CONSOLE_INFO)
+//		return;
+//	if (status == CONSOLE_WARNING)
+//		return;
 	//TODO make naked and show all registers
 	if (status == CONSOLE_ERROR) {
 		RED;
