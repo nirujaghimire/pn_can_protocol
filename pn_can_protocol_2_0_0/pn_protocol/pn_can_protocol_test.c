@@ -67,7 +67,9 @@ static int canSend(uint32_t id, uint8_t *bytes, uint8_t len) {
 	return HAL_CAN_AddTxMessage(&hcan, &tx_header, bytes, &tx_mailbox) == HAL_OK;
 }
 
-int txCallback(uint32_t id, uint8_t *bytes, uint16_t size, int status) {
+int txCallback(uint32_t id, uint8_t *bytes, uint16_t size, int status,
+		const char *log) {
+	printf("LOG : %s\n",log);
 	printf("TX|0x%0x>", (int) id);
 	for (int i = 0; i < 8; i++)
 		printf(" %d ", bytes[i]);
@@ -120,17 +122,17 @@ void run() {
 	while (1) {
 		if ((HAL_GetTick() - prevMillis) > 100) {
 			StaticCANLink.addTxMsgPtr(canLink1, 0xA, dataBytes1,
-					sizeof(dataBytes1));
+					sizeof(dataBytes1),"A");
 			StaticCANLink.addTxMsgPtr(canLink1, 0xB, dataBytes2,
-					sizeof(dataBytes2));
+					sizeof(dataBytes2),"B");
 			StaticCANLink.addTxMsgPtr(canLink1, 0xC, dataBytes3,
-					sizeof(dataBytes3));
+					sizeof(dataBytes3),"B");
 			StaticCANLink.addTxMsgPtr(canLink2, 0xD, dataBytes1,
-					sizeof(dataBytes1));
+					sizeof(dataBytes1),"B");
 			StaticCANLink.addTxMsgPtr(canLink2, 0xE, dataBytes2,
-					sizeof(dataBytes2));
+					sizeof(dataBytes2),"B");
 			StaticCANLink.addTxMsgPtr(canLink2, 0xF, dataBytes3,
-					sizeof(dataBytes3));
+					sizeof(dataBytes3),"B");
 			prevMillis = HAL_GetTick();
 		}
 		StaticCANLink.thread(canLink1);
@@ -150,28 +152,28 @@ void run() {
 	BuddyHeap heap1 = StaticBuddyHeap.new(buffer1, sizeof(buffer1), 8);
 	BuddyHeap heap2 = StaticBuddyHeap.new(buffer2, sizeof(buffer2), 8);
 	canLink1 = StaticCANLink.new(0x1, 0x2, 0x3, 0x4, canSend, txCallback,
-			rxCallback, &heap1, 0);
+			rxCallback, &heap1, 1);
 	canLink2 = StaticCANLink.new(0x11, 0x22, 0x33, 0x44, canSend, txCallback,
-			rxCallback, &heap2, 0);
+			rxCallback, &heap2, 1);
 
-	HAL_Delay(5000);
+	HAL_Delay(3000);
 	printf("----------------------RX INITIATING-----------------------\n");
 
 	uint32_t prevMillis = HAL_GetTick();
 	while (1) {
-		if ((HAL_GetTick() - prevMillis) > 300) {
+		if ((HAL_GetTick() - prevMillis) > 10) {
 			StaticCANLink.addTxMsgPtr(canLink1, 0xAA, dataBytes1,
-					sizeof(dataBytes1));
-//			StaticCANLink.addTxMsgPtr(canLink1, 0xBB, dataBytes2,
-//					sizeof(dataBytes2));
-//			StaticCANLink.addTxMsgPtr(canLink1, 0xCC, dataBytes3,
-//					sizeof(dataBytes3));
-//			StaticCANLink.addTxMsgPtr(canLink2, 0xDD, dataBytes1,
-//					sizeof(dataBytes1));
-//			StaticCANLink.addTxMsgPtr(canLink2, 0xEE, dataBytes2,
-//					sizeof(dataBytes2));
-//			StaticCANLink.addTxMsgPtr(canLink2, 0xFF, dataBytes3,
-//					sizeof(dataBytes3));
+					sizeof(dataBytes1), "AA");
+			StaticCANLink.addTxMsgPtr(canLink1, 0xBB, dataBytes2,
+					sizeof(dataBytes2), "BB");
+			StaticCANLink.addTxMsgPtr(canLink1, 0xCC, dataBytes3,
+					sizeof(dataBytes3), "CC");
+			StaticCANLink.addTxMsgPtr(canLink2, 0xDD, dataBytes1,
+					sizeof(dataBytes1), "DD");
+			StaticCANLink.addTxMsgPtr(canLink2, 0xEE, dataBytes2,
+					sizeof(dataBytes2), "EE");
+			StaticCANLink.addTxMsgPtr(canLink2, 0xFF, dataBytes3,
+					sizeof(dataBytes3), "FF");
 			prevMillis = HAL_GetTick();
 		}
 		StaticCANLink.thread(canLink1);
