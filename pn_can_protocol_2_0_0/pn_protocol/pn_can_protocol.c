@@ -8,6 +8,7 @@
 #include "stdarg.h"
 #include "stdio.h"
 #include "main.h"
+#include "string.h"
 
 //#define CONSOLE_ENABLE
 
@@ -96,7 +97,7 @@ static CANLink* new(uint32_t startReqID, uint32_t startAckID, uint32_t endReqID,
 		uint32_t endAckID,
 		int (*canSend)(uint32_t id, uint8_t *bytes, uint8_t len),
 		int (*txCallback)(uint32_t id, uint8_t *bytes, uint16_t size,
-				int status),
+				int status,const char*log),
 		int (*rxCallback)(uint32_t id, uint8_t *bytes, uint16_t size,
 				int status), BuddyHeap *heap, int isQueue) {
 	int n = linkCount++;
@@ -190,9 +191,10 @@ static SyncLayerCANData* getDataFromQueue(Queue *queue, uint32_t ID) {
  * @param id	: ID of bytes to be transmitted
  * @param bytes	: Bytes to be transmitted
  * @param size	: Size in bytes
+ * @param log	: Log of message
  */
 static void addTxMsgPtr(CANLink *link, uint32_t id, uint8_t *bytes,
-		uint16_t size) {
+		uint16_t size, const char *log) {
 	if (bytes == NULL)
 		return;
 	SyncLayerCANData *syncData;
@@ -232,6 +234,8 @@ static void addTxMsgPtr(CANLink *link, uint32_t id, uint8_t *bytes,
 	syncData->numTry = PN_CAN_PROTOCOL_NUM_OF_TRY;
 	syncData->track = SYNC_LAYER_CAN_START_REQ;
 	syncData->waitTill = getMillis() + TRANSMIT_TIMEOUT; //b0xFFFFFFFF;
+	syncData->log[0] = '\0';
+	strcpy(syncData->log, log);
 
 	if (link->isQueue) {
 		Queue *queue = StaticQueue.enqueue(link->txQueue, syncData);
@@ -274,8 +278,10 @@ static void addTxMsgPtr(CANLink *link, uint32_t id, uint8_t *bytes,
  * @param id	: ID of bytes to be transmitted
  * @param bytes	: Bytes to be transmitted
  * @param size	: Size in bytes
+ * @param log	: Log of message
  */
-static void addTxMsg(CANLink *link, uint32_t id, uint8_t *bytes, uint16_t size) {
+static void addTxMsg(CANLink *link, uint32_t id, uint8_t *bytes, uint16_t size,
+		const char *log) {
 	if (bytes == NULL)
 		return;
 
@@ -343,6 +349,9 @@ static void addTxMsg(CANLink *link, uint32_t id, uint8_t *bytes, uint16_t size) 
 	syncData->numTry = PN_CAN_PROTOCOL_NUM_OF_TRY;
 	syncData->track = SYNC_LAYER_CAN_START_REQ;
 	syncData->waitTill = getMillis() + TRANSMIT_TIMEOUT;
+	syncData->log[0] = '\0';
+	strcpy(syncData->log, log);
+
 	if (link->isQueue) {
 		Queue *queue = StaticQueue.enqueue(link->txQueue, syncData);
 		if (queue == NULL) {
@@ -462,10 +471,10 @@ static void txThread(CANLink *link) {
 			int status = 0;
 			if (syncData->track == SYNC_LAYER_CAN_TRANSMIT_SUCCESS)
 				status = link->txCallback(syncData->id, syncData->bytes,
-						syncData->size, 1);
+						syncData->size, 1,syncData->log);
 			else if (syncData->track == SYNC_LAYER_CAN_TRANSMIT_FAILED)
 				status = link->txCallback(syncData->id, syncData->bytes,
-						syncData->size, 0);
+						syncData->size, 0,syncData->log);
 			if (status) {
 				if (syncData->isBytesDynamicallyAllocated)
 					freeMemory(link->heap, syncData->bytes, syncData->size);
@@ -498,10 +507,10 @@ static void txThread(CANLink *link) {
 			int status = 0;
 			if (syncData->track == SYNC_LAYER_CAN_TRANSMIT_SUCCESS)
 				status = link->txCallback(syncData->id, syncData->bytes,
-						syncData->size, 1);
+						syncData->size, 1,syncData->log);
 			else if (syncData->track == SYNC_LAYER_CAN_TRANSMIT_FAILED)
 				status = link->txCallback(syncData->id, syncData->bytes,
-						syncData->size, 0);
+						syncData->size, 0,syncData->log);
 			if (status) {
 				if (syncData->isBytesDynamicallyAllocated)
 					freeMemory(link->heap, syncData->bytes, syncData->size);
@@ -638,5 +647,5 @@ static void canReceive(CANLink *link, uint32_t id, uint8_t *bytes, uint16_t len)
 }
 
 struct CANLinkControl StaticCANLink = { .addRxMsgPtr = addRxMsgPtr, .addTxMsg =
-		addTxMsg, .addTxMsgPtr = addTxMsgPtr,.pop = pop, .canReceive = canReceive, .new =
-		new, .thread = thread, };
+		addTxMsg, .addTxMsgPtr = addTxMsgPtr, .pop = pop, .canReceive =
+		canReceive, .new = new, .thread = thread, };

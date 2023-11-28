@@ -9,9 +9,9 @@
 #define PN_CAN_SYNC_LAYER_H_
 #include "stdint.h"
 
-#define TRANSMIT_TIMEOUT 1000
-#define RECEIVE_TIMEOUT  1000
-
+#define TRANSMIT_TIMEOUT 	1000
+#define RECEIVE_TIMEOUT  	1000
+#define LOG_SIZE 			50
 
 typedef enum {
 	SYNC_LAYER_CAN_START_REQ,
@@ -34,6 +34,7 @@ typedef struct {
 	uint8_t numTry;
 	////////////For transmitter///////////
 	uint8_t frameIndex;
+	char log[LOG_SIZE];
 	////////////For receiver//////////
 	uint8_t frameRecords[19];
 	////////////For both///////////
