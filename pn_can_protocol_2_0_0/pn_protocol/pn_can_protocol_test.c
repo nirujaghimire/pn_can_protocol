@@ -8,7 +8,7 @@
 #include "pn_can_protocol.h"
 
 #define TEST_ENABLE
-#define TX_ENABLE
+//#define TX_ENABLE
 
 #ifdef TEST_ENABLE
 CANLink *canLink1;
@@ -126,13 +126,13 @@ void run() {
 			StaticCANLink.addTxMsgPtr(canLink1, 0xB, dataBytes2,
 					sizeof(dataBytes2),"B");
 			StaticCANLink.addTxMsgPtr(canLink1, 0xC, dataBytes3,
-					sizeof(dataBytes3),"B");
+					sizeof(dataBytes3),"C");
 			StaticCANLink.addTxMsgPtr(canLink2, 0xD, dataBytes1,
-					sizeof(dataBytes1),"B");
+					sizeof(dataBytes1),"D");
 			StaticCANLink.addTxMsgPtr(canLink2, 0xE, dataBytes2,
-					sizeof(dataBytes2),"B");
+					sizeof(dataBytes2),"E");
 			StaticCANLink.addTxMsgPtr(canLink2, 0xF, dataBytes3,
-					sizeof(dataBytes3),"B");
+					sizeof(dataBytes3),"F");
 			prevMillis = HAL_GetTick();
 		}
 		StaticCANLink.thread(canLink1);
@@ -161,7 +161,7 @@ void run() {
 
 	uint32_t prevMillis = HAL_GetTick();
 	while (1) {
-		if ((HAL_GetTick() - prevMillis) > 10) {
+		if ((HAL_GetTick() - prevMillis) > 100) {
 			StaticCANLink.addTxMsgPtr(canLink1, 0xAA, dataBytes1,
 					sizeof(dataBytes1), "AA");
 			StaticCANLink.addTxMsgPtr(canLink1, 0xBB, dataBytes2,
