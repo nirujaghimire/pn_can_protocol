@@ -1,3 +1,0 @@
-crc.c:46:6:crc_init	1
-crc.c:49:10:crc32_accumulate	5
-crc.c:64:10:crc32_calculate	1
