@@ -27,9 +27,9 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   ALLOC
  11 .ARM.attributes 00000029  00000000  00000000  00020070  2**0
                   CONTENTS, READONLY
- 12 .debug_info   00007119  00000000  00000000  00020099  2**0
+ 12 .debug_info   0000711a  00000000  00000000  00020099  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 13 .debug_abbrev 00001592  00000000  00000000  000271b2  2**0
+ 13 .debug_abbrev 00001592  00000000  00000000  000271b3  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  14 .debug_aranges 000006e8  00000000  00000000  00028748  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
@@ -333,7 +333,7 @@ static void MX_GPIO_Init(void)
 08000288 <_write>:
 
 /* USER CODE BEGIN 4 */
-int _write(int fd, char *data, int len) {
+int _write(int file, char *data, int len) {
  8000288:	b580      	push	{r7, lr}
  800028a:	b084      	sub	sp, #16
  800028c:	af00      	add	r7, sp, #0

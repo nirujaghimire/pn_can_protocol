@@ -9771,12 +9771,12 @@ void run() {
  80037ec:	f7fc ff92 	bl	8000714 <HAL_GetTick>
  80037f0:	63b8      	str	r0, [r7, #56]	; 0x38
 	while (1) {
-		if ((HAL_GetTick() - prevMillis) > 100) {
+		if ((HAL_GetTick() - prevMillis) > 10) {
  80037f2:	f7fc ff8f 	bl	8000714 <HAL_GetTick>
  80037f6:	4602      	mov	r2, r0
  80037f8:	6bbb      	ldr	r3, [r7, #56]	; 0x38
  80037fa:	1ad3      	subs	r3, r2, r3
- 80037fc:	2b64      	cmp	r3, #100	; 0x64
+ 80037fc:	2b0a      	cmp	r3, #10
  80037fe:	d932      	bls.n	8003866 <run+0x166>
 			StaticCANLink.addTxMsgPtr(canLink1, 0xA, dataBytes1,
  8003800:	4b25      	ldr	r3, [pc, #148]	; (8003898 <run+0x198>)
@@ -9856,7 +9856,7 @@ void run() {
  8003878:	6812      	ldr	r2, [r2, #0]
  800387a:	4610      	mov	r0, r2
  800387c:	4798      	blx	r3
-		if ((HAL_GetTick() - prevMillis) > 100) {
+		if ((HAL_GetTick() - prevMillis) > 10) {
  800387e:	e7b8      	b.n	80037f2 <run+0xf2>
  8003880:	20002e54 	.word	0x20002e54
  8003884:	20002e5c 	.word	0x20002e5c

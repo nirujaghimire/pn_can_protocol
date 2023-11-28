@@ -53,7 +53,7 @@ extern "C" {
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
-int _write(int fd,char*data,int len);
+int _write(int file,char*data,int len);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/

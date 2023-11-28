@@ -2965,20 +2965,20 @@ LOAD c:/st/stm32cubeide_1.10.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.ext
 LOAD c:/st/stm32cubeide_1.10.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.200.202301161003/tools/bin/../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/lib/thumb/v7-m/nofp\libm.a
 LOAD c:/st/stm32cubeide_1.10.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.200.202301161003/tools/bin/../lib/gcc/arm-none-eabi/10.3.1/thumb/v7-m/nofp\libgcc.a
 
-.debug_info     0x0000000000000000     0x7119
- .debug_info    0x0000000000000000      0x930 ./Core/Src/main.o
- .debug_info    0x0000000000000930      0x7e2 ./Core/Src/stm32f1xx_hal_msp.o
- .debug_info    0x0000000000001112      0x194 ./Core/Src/stm32f1xx_it.o
- .debug_info    0x00000000000012a6      0x6e0 ./Core/Src/syscalls.o
- .debug_info    0x0000000000001986      0x171 ./Core/Src/sysmem.o
- .debug_info    0x0000000000001af7      0x23d ./Core/Src/system_stm32f1xx.o
- .debug_info    0x0000000000001d34      0x143 ./Core/Src/user.o
- .debug_info    0x0000000000001e77       0x22 ./Core/Startup/startup_stm32f103c8tx.o
- .debug_info    0x0000000000001e99      0x734 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal.o
- .debug_info    0x00000000000025cd      0xb20 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_cortex.o
- .debug_info    0x00000000000030ed      0x615 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio.o
- .debug_info    0x0000000000003702      0x865 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc.o
- .debug_info    0x0000000000003f67     0x31b2 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_uart.o
+.debug_info     0x0000000000000000     0x711a
+ .debug_info    0x0000000000000000      0x931 ./Core/Src/main.o
+ .debug_info    0x0000000000000931      0x7e2 ./Core/Src/stm32f1xx_hal_msp.o
+ .debug_info    0x0000000000001113      0x194 ./Core/Src/stm32f1xx_it.o
+ .debug_info    0x00000000000012a7      0x6e0 ./Core/Src/syscalls.o
+ .debug_info    0x0000000000001987      0x171 ./Core/Src/sysmem.o
+ .debug_info    0x0000000000001af8      0x23d ./Core/Src/system_stm32f1xx.o
+ .debug_info    0x0000000000001d35      0x143 ./Core/Src/user.o
+ .debug_info    0x0000000000001e78       0x22 ./Core/Startup/startup_stm32f103c8tx.o
+ .debug_info    0x0000000000001e9a      0x734 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal.o
+ .debug_info    0x00000000000025ce      0xb20 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_cortex.o
+ .debug_info    0x00000000000030ee      0x615 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio.o
+ .debug_info    0x0000000000003703      0x865 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc.o
+ .debug_info    0x0000000000003f68     0x31b2 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_uart.o
 
 .debug_abbrev   0x0000000000000000     0x1592
  .debug_abbrev  0x0000000000000000      0x261 ./Core/Src/main.o
@@ -3151,13 +3151,13 @@ LOAD c:/st/stm32cubeide_1.10.1/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.ext
  .debug_line    0x00000000000061a3     0x2825 ./Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_uart.o
 
 .debug_str      0x0000000000000000    0x8366c
- .debug_str     0x0000000000000000    0x8072a ./Core/Src/main.o
-                                      0x80ad0 (size before relaxing)
- .debug_str     0x000000000008072a       0xb7 ./Core/Src/stm32f1xx_hal_msp.o
+ .debug_str     0x0000000000000000    0x8072f ./Core/Src/main.o
+                                      0x80ad5 (size before relaxing)
+ .debug_str     0x000000000008072f       0xb7 ./Core/Src/stm32f1xx_hal_msp.o
                                       0x8096f (size before relaxing)
- .debug_str     0x00000000000807e1       0xd0 ./Core/Src/stm32f1xx_it.o
+ .debug_str     0x00000000000807e6       0xd0 ./Core/Src/stm32f1xx_it.o
                                       0x80548 (size before relaxing)
- .debug_str     0x00000000000808b1     0x1756 ./Core/Src/syscalls.o
+ .debug_str     0x00000000000808b6     0x1751 ./Core/Src/syscalls.o
                                        0x8a40 (size before relaxing)
  .debug_str     0x0000000000082007       0x6b ./Core/Src/sysmem.o
                                        0x5d7c (size before relaxing)

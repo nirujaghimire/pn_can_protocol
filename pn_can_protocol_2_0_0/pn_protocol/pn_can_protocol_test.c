@@ -118,7 +118,7 @@ void run() {
 
 	uint32_t prevMillis = HAL_GetTick();
 	while (1) {
-		if ((HAL_GetTick() - prevMillis) > 100) {
+		if ((HAL_GetTick() - prevMillis) > 10) {
 			StaticCANLink.addTxMsgPtr(canLink1, 0xA, dataBytes1,
 					sizeof(dataBytes1));
 			StaticCANLink.addTxMsgPtr(canLink1, 0xB, dataBytes2,
