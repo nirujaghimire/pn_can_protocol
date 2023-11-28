@@ -20,7 +20,7 @@
 
 typedef struct {
 	SyncLayerCANLink link;
-	int (*txCallback)(uint32_t id, uint8_t *bytes, uint16_t size, int status);
+	int (*txCallback)(uint32_t id, uint8_t *bytes, uint16_t size, int status,const char*log);
 	int (*rxCallback)(uint32_t id, uint8_t *bytes, uint16_t size, int status);
 	BuddyHeap *heap;
 	HashMap *txMap;
@@ -44,11 +44,11 @@ struct CANLinkControl {
 	 * @param isQueue		: 1 for use queue in transmit and 0 for use of map in transmit
 	 * @return				: Return the newly created link
 	 */
-	CANLink* (*new)(uint32_t startReqID, uint32_t startAckID,
-			uint32_t endReqID, uint32_t endAckID,
+	CANLink* (*new)(uint32_t startReqID, uint32_t startAckID, uint32_t endReqID,
+			uint32_t endAckID,
 			int (*canSend)(uint32_t id, uint8_t *bytes, uint8_t len),
 			int (*txCallback)(uint32_t id, uint8_t *bytes, uint16_t size,
-					int status),
+					int status,const char*log),
 			int (*rxCallback)(uint32_t id, uint8_t *bytes, uint16_t size,
 					int status), BuddyHeap *heap, int isQueue);
 
@@ -58,9 +58,10 @@ struct CANLinkControl {
 	 * @param id	: ID of bytes to be transmitted
 	 * @param bytes	: Bytes to be transmitted
 	 * @param size	: Size in bytes
+	 * @param log	: Log of message
 	 */
 	void (*addTxMsgPtr)(CANLink *link, uint32_t id, uint8_t *bytes,
-			uint16_t size);
+			uint16_t size, const char *log);
 
 	/**
 	 * This adds message to be transmitted with a dynamic memory allocation
@@ -68,8 +69,10 @@ struct CANLinkControl {
 	 * @param id	: ID of bytes to be transmitted
 	 * @param bytes	: Bytes to be transmitted
 	 * @param size	: Size in bytes
+	 * @param log	: Log of message
 	 */
-	void (*addTxMsg)(CANLink *link, uint32_t id, uint8_t *bytes, uint16_t size);
+	void (*addTxMsg)(CANLink *link, uint32_t id, uint8_t *bytes, uint16_t size,
+			const char *log);
 
 	/**
 	 * This adds message to be received without dynamic memory allocation
