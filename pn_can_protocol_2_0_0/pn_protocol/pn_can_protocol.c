@@ -457,7 +457,7 @@ static int pop(CANLink *link) {
 	if (syncData->isBytesDynamicallyAllocated)
 		freeMemory(link->heap, syncData->bytes, syncData->size);
 	freeMemory(link->heap, syncData, sizeof(SyncLayerCANData));
-	StaticQueue.dequeue(link->txQueue);
+//	StaticQueue.dequeue(link->txQueue);
 	return 1;
 }
 
@@ -466,7 +466,8 @@ static void txThread(CANLink *link) {
 		//Send thread
 		SyncLayerCANData *syncData = StaticQueue.peek(link->txQueue);
 		if (syncData != NULL) {
-			StaticSyncLayerCan.txSendThread(&link->link, syncData);
+			if(syncData->track!=SYNC_LAYER_CAN_TRANSMIT_SUCCESS && syncData->track!=SYNC_LAYER_CAN_TRANSMIT_FAILED)
+				StaticSyncLayerCan.txSendThread(&link->link, syncData);
 
 			int status = 0;
 			if (syncData->track == SYNC_LAYER_CAN_TRANSMIT_SUCCESS)
@@ -490,8 +491,9 @@ static void txThread(CANLink *link) {
 					|| canData.ID == link->link.endAckID) {
 				SyncLayerCANData *syncData = StaticQueue.peek(link->txQueue);
 				if (syncData != NULL)
-					StaticSyncLayerCan.txReceiveThread(&link->link, syncData,
-							canData.ID, canData.byte, canData.len);
+					if(syncData->track!=SYNC_LAYER_CAN_TRANSMIT_SUCCESS && syncData->track!=SYNC_LAYER_CAN_TRANSMIT_FAILED)
+						StaticSyncLayerCan.txReceiveThread(&link->link, syncData,
+								canData.ID, canData.byte, canData.len);
 			}
 		}
 	} else {
