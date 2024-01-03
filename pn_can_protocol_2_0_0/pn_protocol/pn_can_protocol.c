@@ -457,7 +457,6 @@ static int pop(CANLink *link) {
 	if (syncData->isBytesDynamicallyAllocated)
 		freeMemory(link->heap, syncData->bytes, syncData->size);
 	freeMemory(link->heap, syncData, sizeof(SyncLayerCANData));
-//	StaticQueue.dequeue(link->txQueue);
 	return 1;
 }
 
