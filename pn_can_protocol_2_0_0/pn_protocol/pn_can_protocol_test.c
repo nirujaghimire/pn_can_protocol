@@ -8,7 +8,7 @@
 #include "pn_can_protocol.h"
 
 #define TEST_ENABLE
-#define TX_ENABLE
+//#define TX_ENABLE
 
 #ifdef TEST_ENABLE
 CANLink *canLink1;
@@ -152,28 +152,28 @@ void run() {
 	BuddyHeap heap1 = StaticBuddyHeap.new(buffer1, sizeof(buffer1), 8);
 	BuddyHeap heap2 = StaticBuddyHeap.new(buffer2, sizeof(buffer2), 8);
 	canLink1 = StaticCANLink.new(0x1, 0x2, 0x3, 0x4, canSend, txCallback,
-			rxCallback, &heap1, 1);
+			rxCallback, &heap1, 0);
 	canLink2 = StaticCANLink.new(0x11, 0x22, 0x33, 0x44, canSend, txCallback,
 			rxCallback, &heap2, 1);
 
-	HAL_Delay(3000);
+//	HAL_Delay(3000);
 	printf("----------------------RX INITIATING-----------------------\n");
 
 	uint32_t prevMillis = HAL_GetTick();
 	while (1) {
 		if ((HAL_GetTick() - prevMillis) > 10) {
-			StaticCANLink.addTxMsgPtr(canLink1, 0xAA, dataBytes1,
-					sizeof(dataBytes1), "AA");
-			StaticCANLink.addTxMsgPtr(canLink1, 0xBB, dataBytes2,
-					sizeof(dataBytes2), "BB");
-			StaticCANLink.addTxMsgPtr(canLink1, 0xCC, dataBytes3,
-					sizeof(dataBytes3), "CC");
-			StaticCANLink.addTxMsgPtr(canLink2, 0xDD, dataBytes1,
-					sizeof(dataBytes1), "DD");
-			StaticCANLink.addTxMsgPtr(canLink2, 0xEE, dataBytes2,
-					sizeof(dataBytes2), "EE");
-			StaticCANLink.addTxMsgPtr(canLink2, 0xFF, dataBytes3,
-					sizeof(dataBytes3), "FF");
+//			StaticCANLink.addTxMsgPtr(canLink1, 0xAA, dataBytes1,
+//					sizeof(dataBytes1), "AA");
+//			StaticCANLink.addTxMsgPtr(canLink1, 0xBB, dataBytes2,
+//					sizeof(dataBytes2), "BB");
+//			StaticCANLink.addTxMsgPtr(canLink1, 0xCC, dataBytes3,
+//					sizeof(dataBytes3), "CC");
+//			StaticCANLink.addTxMsgPtr(canLink2, 0xDD, dataBytes1,
+//					sizeof(dataBytes1), "DD");
+//			StaticCANLink.addTxMsgPtr(canLink2, 0xEE, dataBytes2,
+//					sizeof(dataBytes2), "EE");
+//			StaticCANLink.addTxMsgPtr(canLink2, 0xFF, dataBytes3,
+//					sizeof(dataBytes3), "FF");
 			prevMillis = HAL_GetTick();
 		}
 		StaticCANLink.thread(canLink1);

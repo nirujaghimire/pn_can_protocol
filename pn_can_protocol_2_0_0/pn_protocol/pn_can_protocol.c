@@ -466,7 +466,8 @@ static void txThread(CANLink *link) {
 		//Send thread
 		SyncLayerCANData *syncData = StaticQueue.peek(link->txQueue);
 		if (syncData != NULL) {
-			StaticSyncLayerCan.txSendThread(&link->link, syncData);
+			if(syncData->track!=SYNC_LAYER_CAN_TRANSMIT_SUCCESS && syncData->track!=SYNC_LAYER_CAN_TRANSMIT_FAILED)
+				StaticSyncLayerCan.txSendThread(&link->link, syncData);
 
 			int status = 0;
 			if (syncData->track == SYNC_LAYER_CAN_TRANSMIT_SUCCESS)
@@ -490,8 +491,9 @@ static void txThread(CANLink *link) {
 					|| canData.ID == link->link.endAckID) {
 				SyncLayerCANData *syncData = StaticQueue.peek(link->txQueue);
 				if (syncData != NULL)
-					StaticSyncLayerCan.txReceiveThread(&link->link, syncData,
-							canData.ID, canData.byte, canData.len);
+					if(syncData->track!=SYNC_LAYER_CAN_TRANSMIT_SUCCESS && syncData->track!=SYNC_LAYER_CAN_TRANSMIT_FAILED)
+						StaticSyncLayerCan.txReceiveThread(&link->link, syncData,
+								canData.ID, canData.byte, canData.len);
 			}
 		}
 	} else {
@@ -501,8 +503,8 @@ static void txThread(CANLink *link) {
 		StaticHashMap.getKeys(link->txMap, key, &keyLen);
 		for (int i = 0; i < keyLen; i++) {
 			SyncLayerCANData *syncData = StaticHashMap.get(link->txMap, key[i]);
-
-			StaticSyncLayerCan.txSendThread(&link->link, syncData);
+			if(syncData->track!=SYNC_LAYER_CAN_TRANSMIT_SUCCESS && syncData->track!=SYNC_LAYER_CAN_TRANSMIT_FAILED)
+				StaticSyncLayerCan.txSendThread(&link->link, syncData);
 
 			int status = 0;
 			if (syncData->track == SYNC_LAYER_CAN_TRANSMIT_SUCCESS)
@@ -529,8 +531,9 @@ static void txThread(CANLink *link) {
 				SyncLayerCANData *syncData = StaticHashMap.get(link->txMap,
 						dataID);
 				if (syncData != NULL)
-					StaticSyncLayerCan.txReceiveThread(&link->link, syncData,
-							canData.ID, canData.byte, canData.len);
+					if(syncData->track!=SYNC_LAYER_CAN_TRANSMIT_SUCCESS && syncData->track!=SYNC_LAYER_CAN_TRANSMIT_FAILED)
+						StaticSyncLayerCan.txReceiveThread(&link->link, syncData,
+								canData.ID, canData.byte, canData.len);
 			}
 		}
 	}
@@ -543,7 +546,8 @@ static void rxThread(CANLink *link) {
 	StaticHashMap.getKeys(link->rxMap, key, &keyLen);
 	for (int i = 0; i < keyLen; i++) {
 		SyncLayerCANData *syncData = StaticHashMap.get(link->rxMap, key[i]);
-		StaticSyncLayerCan.rxSendThread(&link->link, syncData);
+		if(syncData->track!=SYNC_LAYER_CAN_RECEIVE_SUCCESS && syncData->track!=SYNC_LAYER_CAN_RECEIVE_FAILED)
+			StaticSyncLayerCan.rxSendThread(&link->link, syncData);
 
 		int status = 0;
 		if (syncData->track == SYNC_LAYER_CAN_RECEIVE_SUCCESS)
@@ -614,8 +618,9 @@ static void rxThread(CANLink *link) {
 			syncData = StaticHashMap.get(link->rxMap, dataID);
 		}
 		if (syncData != NULL)
-			StaticSyncLayerCan.rxReceiveThread(&link->link, syncData,
-					canData.ID, canData.byte, canData.len);
+			if(syncData->track!=SYNC_LAYER_CAN_RECEIVE_SUCCESS && syncData->track!=SYNC_LAYER_CAN_RECEIVE_FAILED)
+				StaticSyncLayerCan.rxReceiveThread(&link->link, syncData,
+						canData.ID, canData.byte, canData.len);
 	}
 
 }
